@@ -15,8 +15,8 @@
     "db:migrate": "turbo run db:migrate --filter=@dhs/backend",
     "db:generate": "turbo run db:generate --filter=@dhs/backend",
     "db:seed": "turbo run db:seed --filter=@dhs/backend",
-    "build:backend": "cd apps/backend && npx prisma generate && npx tsc",
-    "start:backend": "cd apps/backend && npx prisma migrate deploy && node dist/server.js"
+    "build:backend": "cd apps/backend && npx prisma generate",
+    "start:backend": "cd apps/backend && npx prisma migrate deploy && npx tsx src/server.ts"
   },
   "devDependencies": {
     "turbo": "^2.4.0",
