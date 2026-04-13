@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Card, Form, Input, InputNumber, Button, Space, Row, Col } from 'antd';
+import { Spin, Card, Form, InputNumber, Button, Space, Row, Col } from 'antd';
 import { useDrawing, useUpdateDrawing } from '../hooks/useDrawings';
+import ImageUpload from '@/components/common/ImageUpload';
 
 export default function DrawingUpdatePage() {
   const { id } = useParams<{ id: string }>();
@@ -16,7 +17,9 @@ export default function DrawingUpdatePage() {
     <Card title="도면 수정">
       <Form form={form} layout="vertical" initialValues={drawing} style={{ maxWidth: 600 }}
         onFinish={(v) => mutation.mutate({ id: drawing.id, data: { ...v, version: drawing.version } }, { onSuccess: () => navigate('/drawings') })}>
-        <Form.Item name="imageUrl" label="이미지 URL" rules={[{ required: true }]}><Input /></Form.Item>
+        <Form.Item name="imageUrl" label="도면 이미지" rules={[{ required: true, message: '이미지를 업로드해주세요' }]}>
+          <ImageUpload />
+        </Form.Item>
         <Row gutter={16}>
           <Col span={12}><Form.Item name="lengthCount" label="길이수"><InputNumber style={{ width: '100%' }} /></Form.Item></Col>
         </Row>

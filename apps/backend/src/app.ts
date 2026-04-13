@@ -14,6 +14,7 @@ import checkItemRoutes from './modules/check-item/check-item.routes';
 import orderingRoutes from './modules/ordering/ordering.routes';
 import adminRoutes from './modules/admin/admin.routes';
 import settingsRoutes from './modules/settings/settings.routes';
+import fileRoutes from './modules/file/file.routes';
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/v1/check-items', checkItemRoutes);
 app.use('/api/v1/orderings', orderingRoutes);
 app.use('/api/v1/admins', adminRoutes);
 app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/files', fileRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Input, InputNumber, Select, Button, Space, Row, Col } from 'antd';
+import { Card, Form, InputNumber, Select, Button, Space, Row, Col } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import { useCreateDrawing } from '../hooks/useDrawings';
+import ImageUpload from '@/components/common/ImageUpload';
 import type { Model, DrawingCreateDto } from '@dhs/shared';
 
 export default function DrawingCreatePage() {
@@ -18,7 +19,9 @@ export default function DrawingCreatePage() {
     <Card title="도면 등록">
       <Form form={form} layout="vertical" style={{ maxWidth: 600 }}
         onFinish={(v: DrawingCreateDto) => mutation.mutate(v, { onSuccess: () => navigate('/drawings') })}>
-        <Form.Item name="imageUrl" label="이미지 URL" rules={[{ required: true }]}><Input placeholder="https://..." /></Form.Item>
+        <Form.Item name="imageUrl" label="도면 이미지" rules={[{ required: true, message: '이미지를 업로드해주세요' }]}>
+          <ImageUpload />
+        </Form.Item>
         <Row gutter={16}>
           <Col span={12}><Form.Item name="lengthCount" label="길이수"><InputNumber style={{ width: '100%' }} /></Form.Item></Col>
           <Col span={12}>

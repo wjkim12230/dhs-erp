@@ -2,6 +2,7 @@ import { Form, Input, Select, DatePicker, InputNumber, Row, Col, Button, Space, 
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { Employee, EmployeeCreateDto } from '@dhs/shared';
+import DaumAddressSearch from '@/components/common/DaumAddressSearch';
 import {
   Position,
   JobGroup,
@@ -135,7 +136,7 @@ export default function EmployeeForm({ initialValues, onSubmit, loading }: Emplo
           </Col>
           <Col span={16}>
             <Form.Item name="address" label="주소">
-              <Input />
+              <DaumAddressSearch />
             </Form.Item>
           </Col>
         </Row>

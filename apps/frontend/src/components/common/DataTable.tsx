@@ -44,7 +44,7 @@ export default function DataTable<T extends object>({
     <Card
       title={title}
       extra={extra}
-      styles={{ body: { padding: 0 } }}
+      styles={{ body: { padding: 0, overflow: 'auto' } }}
     >
       <Table<T>
         {...tableProps}
@@ -56,9 +56,11 @@ export default function DataTable<T extends object>({
           showSizeChanger: true,
           pageSizeOptions: PAGE_SIZE_OPTIONS.map(String),
           showTotal: (t) => `총 ${t}건`,
+          style: { padding: '0 16px' },
         }}
         scroll={{ x: 'max-content' }}
         size="middle"
+        style={{ minWidth: 0 }}
       />
     </Card>
   );
