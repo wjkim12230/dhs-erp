@@ -29,11 +29,11 @@ export const authService = {
       role: admin.role,
     };
 
-    const accessToken = jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.accessExpiry,
+    const accessToken = jwt.sign({ ...payload }, config.jwt.secret, {
+      expiresIn: config.jwt.accessExpiry as string,
     });
     const refreshToken = jwt.sign({ id: admin.id }, config.jwt.secret, {
-      expiresIn: config.jwt.refreshExpiry,
+      expiresIn: config.jwt.refreshExpiry as string,
     });
 
     return {
@@ -58,8 +58,8 @@ export const authService = {
         role: admin.role,
       };
 
-      const accessToken = jwt.sign(payload, config.jwt.secret, {
-        expiresIn: config.jwt.accessExpiry,
+      const accessToken = jwt.sign({ ...payload }, config.jwt.secret, {
+        expiresIn: config.jwt.accessExpiry as string,
       });
 
       return { accessToken };

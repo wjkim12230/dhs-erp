@@ -7,6 +7,8 @@
     "moduleResolution": "node",
     "target": "ES2022",
     "lib": ["ES2022"],
+    "strict": false,
+    "skipLibCheck": true,
     "paths": {
       "@dhs/shared": ["../../packages/shared/src"]
     }
