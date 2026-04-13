@@ -29,13 +29,4 @@ export const fileController = {
       next(e);
     }
   },
-
-  async getPresignedUrl(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await fileService.getPresignedUrl(req.query.filename as string);
-      sendSuccess(res, result);
-    } catch (e) {
-      next(e);
-    }
-  },
 };
