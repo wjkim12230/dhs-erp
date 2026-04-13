@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "prisma generate",
-    "start": "prisma migrate deploy && tsx src/server.ts",
+    "start": "prisma db push && tsx src/server.ts",
     "lint": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
