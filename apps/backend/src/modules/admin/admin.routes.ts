@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { adminController } from './admin.controller';
+import { authenticate, authorize } from '../../middleware/auth';
+const router = Router();
+router.use(authenticate, authorize('SUPER'));
+router.get('/', adminController.findAll);
+router.post('/', adminController.create);
+router.delete('/:id', adminController.delete);
+router.post('/:id/reset-password', adminController.resetPassword);
+export default router;

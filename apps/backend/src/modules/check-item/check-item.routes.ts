@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { checkItemController } from './check-item.controller';
+import { authenticate } from '../../middleware/auth';
+const router = Router();
+router.use(authenticate);
+router.get('/', checkItemController.findAll);
+router.post('/', checkItemController.create);
+router.delete('/:id', checkItemController.delete);
+router.get('/:checkItemId/details', checkItemController.findDetails);
+router.post('/:checkItemId/details', checkItemController.createDetail);
+router.delete('/:checkItemId/details/:detailId', checkItemController.deleteDetail);
+export default router;

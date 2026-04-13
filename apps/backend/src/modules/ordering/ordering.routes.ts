@@ -1,0 +1,14 @@
+import { Router } from 'express';
+import { orderingController } from './ordering.controller';
+import { authenticate } from '../../middleware/auth';
+const router = Router();
+router.use(authenticate);
+router.get('/', orderingController.findAll);
+router.get('/:id', orderingController.findById);
+router.post('/', orderingController.create);
+router.patch('/:id', orderingController.update);
+router.delete('/:id', orderingController.delete);
+router.post('/:id/complete', orderingController.complete);
+router.post('/:id/recover', orderingController.recover);
+router.post('/:id/copy', orderingController.copy);
+export default router;

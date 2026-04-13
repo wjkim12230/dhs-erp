@@ -1,0 +1,511 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Enums
+// ============================================================
+
+enum Role {
+  SUPER
+  ADMIN
+  PRODUCTION
+  USER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  LEAVE
+  RETIRED
+}
+
+enum Position {
+  A_CEO
+  B_VICE_CEO
+  C_EXECUTIVE
+  D_GENERAL_MANAGER
+  E_DEPUTY_MANAGER
+  F_MANAGER
+  G_ASSISTANT_MANAGER
+  H_SENIOR_STAFF
+  I_STAFF
+}
+
+enum JobGroup {
+  C_LEVEL
+  MANAGEMENT
+  RESEARCH_CENTER
+  SALES
+  PRODUCTION
+}
+
+enum Headquarter {
+  DAEHYUN_SENSOR
+  PRODUCT_DIVISION
+  RESEARCH_CENTER
+  ADMIN_DIVISION
+  SALES_DIVISION
+}
+
+enum Department {
+  DHS
+  ADMIN_SUPPORT
+  RESEARCH_CENTER
+  MARKETING
+  SENSOR
+  UNIT
+  PURCHASING
+  SALES
+  SALES_DIV1
+  SALES_DIV2
+  DLF
+  A_S
+  PROJECT_SALES
+  GLOBAL_SALES
+  ACCOUNTING
+  PACKAGING
+  PRODUCT
+  MACHINING
+}
+
+enum OrderingTeam {
+  SENSOR
+  UNIT
+  DLF
+}
+
+enum OrderStatus {
+  ACTIVE
+  COMPLETED
+  DELETED
+}
+
+// ============================================================
+// Admin / Auth
+// ============================================================
+
+model Admin {
+  id                  Int       @id @default(autoincrement())
+  loginId             String    @unique
+  name                String
+  password            String
+  role                Role      @default(USER)
+  isEnabled           Boolean   @default(true)
+  lastLoginDate       DateTime?
+  passwordUpdatedDate DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           Int?
+  updatedBy           Int?
+  isDeleted           Boolean   @default(false)
+  version             Int       @default(0)
+
+  @@map("admins")
+}
+
+// ============================================================
+// Employee
+// ============================================================
+
+model Employee {
+  id               Int              @id @default(autoincrement())
+  name             String
+  position         Position
+  jobGroup         JobGroup
+  headquarter      Headquarter
+  department       Department
+  employeeNumber   String           @unique
+  internalNumber   String?
+  contact          String?
+  address          String?
+  salary           Int?
+  birthDate        DateTime?
+  gender           Gender
+  ssn              String?
+  employmentStatus EmploymentStatus @default(ACTIVE)
+  joinDate         DateTime?
+  leaveDate        DateTime?
+  resignDate       DateTime?
+  memo             String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdBy        Int?
+  updatedBy        Int?
+  isDeleted        Boolean          @default(false)
+  version          Int              @default(0)
+
+  // Relations
+  orderOrderings     Ordering[] @relation("orderEmployee")
+  receiptOrderings   Ordering[] @relation("receiptEmployee")
+  packagingOrderings Ordering[] @relation("packagingEmployee")
+  shippingOrderings  Ordering[] @relation("shippingEmployee")
+
+  orderingChecks OrderingToCheck[]
+
+  orderFormOrder   OrderForm[] @relation("orderFormOrderEmployee")
+  orderFormReceipt OrderForm[] @relation("orderFormReceiptEmployee")
+
+  orderFormAssignments OrderFormEmployee[]
+
+  @@map("employees")
+}
+
+// ============================================================
+// Model (Product)
+// ============================================================
+
+model ModelGroup {
+  id        Int      @id @default(autoincrement())
+  name      String
+  priority  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy Int?
+  updatedBy Int?
+  isDeleted Boolean  @default(false)
+  version   Int      @default(0)
+
+  models Model[]
+
+  @@map("model_groups")
+}
+
+model Model {
+  id           Int          @id @default(autoincrement())
+  name         String
+  orderingName String?
+  priority     Int          @default(0)
+  departments  Department[]
+  modelGroupId Int
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  createdBy    Int?
+  updatedBy    Int?
+  isDeleted    Boolean      @default(false)
+  version      Int          @default(0)
+
+  modelGroup     ModelGroup      @relation(fields: [modelGroupId], references: [id])
+  modelDetails   ModelDetail[]
+  drawings       Drawing[]
+  specifications Specification[]
+  checkItems     CheckItem[]
+  orderings      Ordering[]
+
+  @@map("models")
+}
+
+model ModelDetail {
+  id        Int      @id @default(autoincrement())
+  name      String
+  priority  Int      @default(0)
+  modelId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy Int?
+  updatedBy Int?
+  isDeleted Boolean  @default(false)
+  version   Int      @default(0)
+
+  model Model @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@map("model_details")
+}
+
+// ============================================================
+// Specification
+// ============================================================
+
+model Specification {
+  id        Int      @id @default(autoincrement())
+  name      String
+  priority  Int      @default(0)
+  modelId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy Int?
+  updatedBy Int?
+  isDeleted Boolean  @default(false)
+  version   Int      @default(0)
+
+  model                Model                     @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  specificationDetails SpecificationDetail[]
+  drawingMappings      DrawingToSpecification[]
+  orderingMappings     OrderingToSpecification[]
+
+  @@map("specifications")
+}
+
+model SpecificationDetail {
+  id              Int      @id @default(autoincrement())
+  name            String
+  orderingValue   String?
+  priority        Int      @default(0)
+  specificationId Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       Int?
+  updatedBy       Int?
+  isDeleted       Boolean  @default(false)
+  version         Int      @default(0)
+
+  specification    Specification             @relation(fields: [specificationId], references: [id], onDelete: Cascade)
+  orderingMappings OrderingToSpecification[]
+
+  @@map("specification_details")
+}
+
+// ============================================================
+// Drawing
+// ============================================================
+
+model Drawing {
+  id          Int      @id @default(autoincrement())
+  imageUrl    String
+  lengthCount Int?
+  modelId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   Int?
+  updatedBy   Int?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(0)
+
+  model                   Model                    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  drawingToSpecifications DrawingToSpecification[]
+
+  @@map("drawings")
+}
+
+model DrawingToSpecification {
+  id              Int      @id @default(autoincrement())
+  relation        Boolean  @default(false)
+  basic           String?
+  significant     String?
+  drawingId       Int
+  specificationId Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  drawing       Drawing       @relation(fields: [drawingId], references: [id], onDelete: Cascade)
+  specification Specification @relation(fields: [specificationId], references: [id], onDelete: Cascade)
+
+  @@map("drawing_to_specifications")
+}
+
+// ============================================================
+// Check Item
+// ============================================================
+
+model CheckItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  priority  Int      @default(0)
+  modelId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy Int?
+  updatedBy Int?
+  isDeleted Boolean  @default(false)
+  version   Int      @default(0)
+
+  model            Model             @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  checkItemDetails CheckItemDetail[]
+
+  @@map("check_items")
+}
+
+model CheckItemDetail {
+  id          Int      @id @default(autoincrement())
+  name        String
+  priority    Int      @default(0)
+  checkItemId Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   Int?
+  updatedBy   Int?
+  isDeleted   Boolean  @default(false)
+  version     Int      @default(0)
+
+  checkItem      CheckItem         @relation(fields: [checkItemId], references: [id], onDelete: Cascade)
+  orderingChecks OrderingToCheck[]
+
+  @@map("check_item_details")
+}
+
+// ============================================================
+// Ordering
+// ============================================================
+
+model Ordering {
+  id                   Int         @id @default(autoincrement())
+  customerName         String
+  siteName             String?
+  orderer              String?
+  customerContact      String?
+  orderDate            DateTime?
+  dueDate              DateTime?
+  orderNumber          String      @unique
+  l1                   String?
+  l2                   String?
+  l3                   String?
+  l4                   String?
+  l5                   String?
+  l6                   String?
+  quantity             String?
+  expectedDeliveryDate DateTime?
+  memo                 String?
+  status               OrderStatus @default(ACTIVE)
+  modelId              Int
+  orderEmployeeId      Int?
+  receiptEmployeeId    Int?
+  packagingEmployeeId  Int?
+  shippingEmployeeId   Int?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  createdBy            Int?
+  updatedBy            Int?
+  isDeleted            Boolean     @default(false)
+  version              Int         @default(0)
+
+  model             Model              @relation(fields: [modelId], references: [id])
+  orderEmployee     Employee?          @relation("orderEmployee", fields: [orderEmployeeId], references: [id])
+  receiptEmployee   Employee?          @relation("receiptEmployee", fields: [receiptEmployeeId], references: [id])
+  packagingEmployee Employee?          @relation("packagingEmployee", fields: [packagingEmployeeId], references: [id])
+  shippingEmployee  Employee?          @relation("shippingEmployee", fields: [shippingEmployeeId], references: [id])
+  specifications    OrderingToSpecification[]
+  checks            OrderingToCheck[]
+  files             FileEntity[]
+  orderForms        OrderForm[]
+
+  @@map("orderings")
+}
+
+model OrderingToSpecification {
+  id                    Int      @id @default(autoincrement())
+  basic                 String?
+  significant           String?
+  orderingId            Int
+  specificationId       Int
+  specificationDetailId Int?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  ordering            Ordering             @relation(fields: [orderingId], references: [id], onDelete: Cascade)
+  specification       Specification        @relation(fields: [specificationId], references: [id])
+  specificationDetail SpecificationDetail? @relation(fields: [specificationDetailId], references: [id])
+
+  @@map("ordering_to_specifications")
+}
+
+model OrderingToCheck {
+  id                Int      @id @default(autoincrement())
+  orderingId        Int
+  checkItemDetailId Int
+  checkEmployeeId   Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  ordering        Ordering        @relation(fields: [orderingId], references: [id], onDelete: Cascade)
+  checkItemDetail CheckItemDetail @relation(fields: [checkItemDetailId], references: [id])
+  checkEmployee   Employee?       @relation(fields: [checkEmployeeId], references: [id])
+
+  @@map("ordering_to_checks")
+}
+
+// ============================================================
+// Order Form
+// ============================================================
+
+model OrderForm {
+  id                   Int         @id @default(autoincrement())
+  dueDate              DateTime?
+  orderingTeam         OrderingTeam
+  orderOwner           String?
+  orderer              String?
+  customerContact      String?
+  contact              String?
+  orderNumber          String?
+  customerName         String?
+  siteName             String?
+  orderDate            DateTime?
+  quantity             String?
+  expectedDeliveryDate DateTime?
+  memo                 String?
+  status               OrderStatus @default(ACTIVE)
+  orderingId           Int?
+  orderEmployeeId      Int?
+  receiptEmployeeId    Int?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  createdBy            Int?
+  updatedBy            Int?
+  isDeleted            Boolean     @default(false)
+  version              Int         @default(0)
+
+  ordering          Ordering?           @relation(fields: [orderingId], references: [id])
+  orderEmployee     Employee?           @relation("orderFormOrderEmployee", fields: [orderEmployeeId], references: [id])
+  receiptEmployee   Employee?           @relation("orderFormReceiptEmployee", fields: [receiptEmployeeId], references: [id])
+  assignedEmployees OrderFormEmployee[]
+  files             FileEntity[]
+
+  @@map("order_forms")
+}
+
+model OrderFormEmployee {
+  id          Int    @id @default(autoincrement())
+  slot        String // A ~ P
+  employeeId  Int
+  orderFormId Int
+
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+  orderForm OrderForm @relation(fields: [orderFormId], references: [id], onDelete: Cascade)
+
+  @@unique([orderFormId, slot])
+  @@map("order_form_employees")
+}
+
+// ============================================================
+// File
+// ============================================================
+
+model FileEntity {
+  id               Int      @id @default(autoincrement())
+  url              String
+  filename         String
+  originalFilename String
+  mimeType         String
+  width            Int?
+  height           Int?
+  size             BigInt
+  orderingId       Int?
+  orderFormId      Int?
+  createdAt        DateTime @default(now())
+
+  ordering  Ordering?  @relation(fields: [orderingId], references: [id])
+  orderForm OrderForm? @relation(fields: [orderFormId], references: [id])
+
+  @@map("files")
+}
+
+// ============================================================
+// App Settings
+// ============================================================
+
+model AppSetting {
+  id              Int     @id @default(autoincrement())
+  defaultLocale   String  @default("ko-kr")
+  international   Boolean @default(false)
+  lastOrderNumber Int     @default(0)
+
+  @@map("app_settings")
+}

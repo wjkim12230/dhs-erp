@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { drawingController } from './drawing.controller';
+import { authenticate } from '../../middleware/auth';
+const router = Router();
+router.use(authenticate);
+router.get('/', drawingController.findAll);
+router.get('/:id', drawingController.findById);
+router.post('/', drawingController.create);
+router.patch('/:id', drawingController.update);
+router.delete('/:id', drawingController.delete);
+export default router;

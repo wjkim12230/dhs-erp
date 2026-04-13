@@ -1,0 +1,24 @@
+{
+  "name": "dhs-erp",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "dev:frontend": "turbo run dev --filter=@dhs/frontend",
+    "dev:backend": "turbo run dev --filter=@dhs/backend",
+    "db:migrate": "turbo run db:migrate --filter=@dhs/backend",
+    "db:generate": "turbo run db:generate --filter=@dhs/backend",
+    "db:seed": "turbo run db:seed --filter=@dhs/backend"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "npm@10.0.0"
+}
