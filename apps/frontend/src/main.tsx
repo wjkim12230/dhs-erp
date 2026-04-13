@@ -25,6 +25,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           token: {
             colorPrimary: '#005BAC',
             borderRadius: 6,
+            controlHeight: 40,
+            fontSize: 14,
+          },
+          components: {
+            Button: { controlHeight: 40 },
+            Input: { controlHeight: 40 },
+            Select: { controlHeight: 40 },
+            DatePicker: { controlHeight: 40 },
+            InputNumber: { controlHeight: 40 },
           },
         }}
       >

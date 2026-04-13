@@ -81,8 +81,8 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
       collapsible
       collapsed={collapsed}
       onCollapse={setCollapsed}
-      style={{ minHeight: '100vh', background: '#001529' }}
-      theme="dark"
+      style={{ minHeight: '100vh', background: '#fff', borderRight: '1px solid #f0f0f0' }}
+      theme="light"
     >
       <div
         style={{
@@ -91,7 +91,7 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           alignItems: 'center',
           justifyContent: 'center',
           padding: collapsed ? '12px 8px' : '12px 16px',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          borderBottom: '1px solid #f0f0f0',
           cursor: 'pointer',
         }}
         onClick={() => navigate('/dashboard')}
@@ -102,11 +102,11 @@ export default function Sidebar({ onNavigate }: SidebarProps = {}) {
           style={{ height: 32, objectFit: 'contain' }}
         />
         {!collapsed && (
-          <span style={{ color: '#fff', fontSize: 14, fontWeight: 600, marginLeft: 8, opacity: 0.85 }}>ERP</span>
+          <span style={{ color: '#005BAC', fontSize: 14, fontWeight: 700, marginLeft: 8 }}>ERP</span>
         )}
       </div>
       <Menu
-        theme="dark"
+        theme="light"
         mode="inline"
         selectedKeys={[selectedKey]}
         defaultOpenKeys={openKeys}

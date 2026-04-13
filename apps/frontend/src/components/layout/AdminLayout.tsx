@@ -35,7 +35,7 @@ export default function AdminLayout() {
           onClose={() => setDrawerOpen(false)}
           open={drawerOpen}
           width={220}
-          styles={{ body: { padding: 0, background: '#001529' } }}
+          styles={{ body: { padding: 0, background: '#fff' } }}
           closable={false}
         >
           <Sidebar onNavigate={() => setDrawerOpen(false)} />
