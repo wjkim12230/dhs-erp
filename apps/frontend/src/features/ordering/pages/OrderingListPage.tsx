@@ -1,65 +1,42 @@
 import { useState } from 'react';
-import { Button, Input, Select, Space, Row, Col, Typography, Tabs, DatePicker } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { Box, TextField, Button, Typography, Stack, Tabs, Tab } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 import type { OrderingFilter, OrderStatus } from '@dhs/shared';
 import { ORDER_STATUS_LABELS } from '@dhs/shared';
 import { useOrderings, useDeleteOrdering, useCompleteOrdering, useRecoverOrdering } from '../hooks/useOrderings';
 import OrderingTable from '../components/OrderingTable';
 
-const { Title } = Typography;
-const { RangePicker } = DatePicker;
-
 export default function OrderingListPage() {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const [activeTab, setActiveTab] = useState<OrderStatus>('ACTIVE');
-  const [filters, setFilters] = useState<OrderingFilter>({ page: 1, limit: 20, status: 'ACTIVE' });
-  const [searchName, setSearchName] = useState('');
-
+  const [filters, setFilters] = useState<OrderingFilter>({ page:1, limit:20, status:'ACTIVE' });
   const { data, isLoading } = useOrderings(filters);
   const deleteMut = useDeleteOrdering();
   const completeMut = useCompleteOrdering();
   const recoverMut = useRecoverOrdering();
 
-  const handleTabChange = (key: string) => {
-    const status = key as OrderStatus;
-    setActiveTab(status);
-    setFilters((p) => ({ ...p, status, page: 1 }));
-  };
+  const handleTab = (_: any, v: OrderStatus) => { setActiveTab(v); setFilters(p => ({...p, status:v, page:1})); };
+  const msg = (text: string) => ({ onSuccess: () => enqueueSnackbar(text, {variant:'success'}) });
 
   return (
-    <>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>수주관리</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/orderings/create')}>수주 등록</Button>
-      </Row>
-
-      <Tabs activeKey={activeTab} onChange={handleTabChange} items={[
-        { key: 'ACTIVE', label: ORDER_STATUS_LABELS.ACTIVE },
-        { key: 'COMPLETED', label: ORDER_STATUS_LABELS.COMPLETED },
-        { key: 'DELETED', label: ORDER_STATUS_LABELS.DELETED },
-      ]} />
-
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Input placeholder="고객명" value={searchName} onChange={(e) => setSearchName(e.target.value)}
-          onPressEnter={() => setFilters((p) => ({ ...p, customerName: searchName, page: 1 }))}
-          suffix={<SearchOutlined style={{ cursor: 'pointer' }} onClick={() => setFilters((p) => ({ ...p, customerName: searchName, page: 1 }))} />}
-          style={{ width: 180 }} />
-        <Input placeholder="수주번호" style={{ width: 160 }}
-          onPressEnter={(e) => setFilters((p) => ({ ...p, orderNumber: (e.target as HTMLInputElement).value, page: 1 }))} />
-        <RangePicker placeholder={['수주일 시작', '수주일 종료']}
-          onChange={(_, ds) => setFilters((p) => ({ ...p, orderDateFrom: ds[0] || undefined, orderDateTo: ds[1] || undefined, page: 1 }))} />
-      </Space>
-
-      <OrderingTable
-        data={data?.data ?? []} total={data?.meta?.total ?? 0}
-        page={filters.page ?? 1} limit={filters.limit ?? 20}
-        loading={isLoading} activeTab={activeTab}
-        onTableChange={({ page, limit, sort, order }) => setFilters((p) => ({ ...p, page, limit, sort, order }))}
-        onDelete={(id) => deleteMut.mutate(id)}
-        onComplete={(id) => completeMut.mutate(id)}
-        onRecover={(id) => recoverMut.mutate(id)}
-      />
-    </>
+    <Box>
+      <Box sx={{ display:'flex', justifyContent:'space-between', alignItems:'center', mb:2 }}>
+        <Typography variant="h5" fontWeight={700}>수주관리</Typography>
+        <Button variant="contained" startIcon={<Add />} onClick={() => navigate('/orderings/create')}>수주 등록</Button>
+      </Box>
+      <Tabs value={activeTab} onChange={handleTab} sx={{ mb:2 }}>
+        {(['ACTIVE','COMPLETED','DELETED'] as OrderStatus[]).map(s => <Tab key={s} value={s} label={ORDER_STATUS_LABELS[s]} />)}
+      </Tabs>
+      <Stack direction="row" spacing={1} sx={{ mb:2 }}>
+        <TextField size="small" placeholder="고객명" onKeyDown={(e) => e.key==='Enter' && setFilters(p=>({...p, customerName:(e.target as HTMLInputElement).value, page:1}))} sx={{width:180}} />
+        <TextField size="small" placeholder="수주번호" onKeyDown={(e) => e.key==='Enter' && setFilters(p=>({...p, orderNumber:(e.target as HTMLInputElement).value, page:1}))} sx={{width:160}} />
+      </Stack>
+      <OrderingTable data={data?.data??[]} total={data?.meta?.total??0} page={(filters.page??1)-1} pageSize={filters.limit??20} loading={isLoading} activeTab={activeTab}
+        onPaginationChange={(m) => setFilters(p=>({...p, page:m.page+1, limit:m.pageSize}))}
+        onDelete={(id) => deleteMut.mutate(id, msg('삭제됨'))} onComplete={(id) => completeMut.mutate(id, msg('완료 처리됨'))} onRecover={(id) => recoverMut.mutate(id, msg('복구됨'))} />
+    </Box>
   );
 }

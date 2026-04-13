@@ -1,16 +1,12 @@
-import { Tag } from 'antd';
+import { Chip } from '@mui/material';
 import { OrderStatus, ORDER_STATUS_LABELS } from '@dhs/shared';
 
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  [OrderStatus.ACTIVE]: 'processing',
+const STATUS_COLORS: Record<OrderStatus, 'info' | 'success' | 'default'> = {
+  [OrderStatus.ACTIVE]: 'info',
   [OrderStatus.COMPLETED]: 'success',
   [OrderStatus.DELETED]: 'default',
 };
 
-interface StatusTagProps {
-  status: OrderStatus;
-}
-
-export default function StatusTag({ status }: StatusTagProps) {
-  return <Tag color={STATUS_COLORS[status]}>{ORDER_STATUS_LABELS[status]}</Tag>;
+export default function StatusTag({ status }: { status: OrderStatus }) {
+  return <Chip label={ORDER_STATUS_LABELS[status]} color={STATUS_COLORS[status]} size="small" />;
 }

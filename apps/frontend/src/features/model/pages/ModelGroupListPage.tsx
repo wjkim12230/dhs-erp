@@ -1,67 +1,63 @@
 import { useState } from 'react';
-import { Button, Row, Typography, Space, Popconfirm, Modal, Form, Input, InputNumber } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Box, Button, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Add, Edit, Delete } from '@mui/icons-material';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
+import { useSnackbar } from 'notistack';
 import type { ModelGroup, PaginationParams } from '@dhs/shared';
-import type { ColumnsType } from 'antd/es/table';
 import { useModelGroups, useCreateModelGroup, useUpdateModelGroup, useDeleteModelGroup } from '../hooks/useModels';
 import DataTable from '@/components/common/DataTable';
 
-const { Title } = Typography;
-
 export default function ModelGroupListPage() {
+  const { enqueueSnackbar } = useSnackbar();
   const [filters, setFilters] = useState<PaginationParams>({ page: 1, limit: 20 });
   const { data, isLoading } = useModelGroups(filters);
   const createMut = useCreateModelGroup();
   const updateMut = useUpdateModelGroup();
   const deleteMut = useDeleteModelGroup();
-  const [modal, setModal] = useState<{ open: boolean; editing?: ModelGroup }>({ open: false });
-  const [form] = Form.useForm();
+  const [dialog, setDialog] = useState<{ open: boolean; editing?: ModelGroup }>({ open: false });
+  const [form, setForm] = useState({ name: '', priority: 0 });
 
-  const openCreate = () => { form.resetFields(); setModal({ open: true }); };
-  const openEdit = (g: ModelGroup) => { form.setFieldsValue(g); setModal({ open: true, editing: g }); };
-  const handleOk = () => {
-    form.validateFields().then((values) => {
-      if (modal.editing) {
-        updateMut.mutate({ id: modal.editing.id, data: { ...values, version: modal.editing.version } }, { onSuccess: () => setModal({ open: false }) });
-      } else {
-        createMut.mutate(values, { onSuccess: () => setModal({ open: false }) });
-      }
-    });
+  const openCreate = () => { setForm({ name: '', priority: 0 }); setDialog({ open: true }); };
+  const openEdit = (g: ModelGroup) => { setForm({ name: g.name, priority: g.priority }); setDialog({ open: true, editing: g }); };
+  const handleSave = () => {
+    if (dialog.editing) {
+      updateMut.mutate({ id: dialog.editing.id, data: { ...form, version: dialog.editing.version } }, { onSuccess: () => { setDialog({ open: false }); enqueueSnackbar('수정됨', {variant:'success'}); } });
+    } else {
+      createMut.mutate(form, { onSuccess: () => { setDialog({ open: false }); enqueueSnackbar('등록됨', {variant:'success'}); } });
+    }
   };
 
-  const columns: ColumnsType<ModelGroup> = [
-    { title: '그룹명', dataIndex: 'name', sorter: true },
-    { title: '우선순위', dataIndex: 'priority', width: 100 },
-    { title: '모델 수', render: (_, r) => r.models?.length ?? 0, width: 100 },
-    {
-      title: '', key: 'actions', width: 100,
-      render: (_, r) => (
-        <Space>
-          <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(r)} />
-          <Popconfirm title="삭제?" onConfirm={() => deleteMut.mutate(r.id)} okText="삭제" cancelText="취소">
-            <Button size="small" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
-      ),
-    },
+  const columns: GridColDef[] = [
+    { field: 'name', headerName: '그룹명', flex: 1 },
+    { field: 'priority', headerName: '우선순위', width: 100 },
+    { field: 'models', headerName: '모델 수', width: 100, valueGetter: (_v: any, row: any) => row.models?.length ?? 0 },
+    { field: 'actions', headerName: '', width: 100, sortable: false, renderCell: (p: any) => (
+      <>
+        <IconButton size="small" onClick={() => openEdit(p.row)}><Edit fontSize="small" /></IconButton>
+        <IconButton size="small" color="error" onClick={() => { if(confirm('삭제?')) deleteMut.mutate(p.row.id, { onSuccess: () => enqueueSnackbar('삭제됨', {variant:'success'}) }); }}><Delete fontSize="small" /></IconButton>
+      </>
+    )},
   ];
 
   return (
-    <>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>모델그룹</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>그룹 추가</Button>
-      </Row>
-      <DataTable<ModelGroup> rowKey="id" columns={columns} dataSource={data?.data ?? []} loading={isLoading}
-        total={data?.meta?.total ?? 0} page={filters.page ?? 1} limit={filters.limit ?? 20}
-        onTableChange={({ page, limit }) => setFilters({ page, limit })} />
-      <Modal title={modal.editing ? '그룹 수정' : '그룹 추가'} open={modal.open} onOk={handleOk} onCancel={() => setModal({ open: false })}
-        confirmLoading={createMut.isPending || updateMut.isPending} okText="저장" cancelText="취소">
-        <Form form={form} layout="vertical">
-          <Form.Item name="name" label="그룹명" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="priority" label="우선순위"><InputNumber style={{ width: '100%' }} /></Form.Item>
-        </Form>
-      </Modal>
-    </>
+    <Box>
+      <Box sx={{ display:'flex', justifyContent:'space-between', alignItems:'center', mb:2 }}>
+        <Typography variant="h5" fontWeight={700}>모델그룹</Typography>
+        <Button variant="contained" startIcon={<Add />} onClick={openCreate}>그룹 추가</Button>
+      </Box>
+      <DataTable columns={columns} rows={data?.data??[]} total={data?.meta?.total??0} page={(filters.page??1)-1} pageSize={filters.limit??20} loading={isLoading}
+        onPaginationChange={(m: GridPaginationModel) => setFilters({page:m.page+1,limit:m.pageSize})} />
+      <Dialog open={dialog.open} onClose={() => setDialog({open:false})} maxWidth="xs" fullWidth>
+        <DialogTitle>{dialog.editing ? '그룹 수정' : '그룹 추가'}</DialogTitle>
+        <DialogContent sx={{ pt: '16px !important' }}>
+          <TextField label="그룹명" value={form.name} onChange={(e) => setForm(p=>({...p,name:e.target.value}))} fullWidth sx={{mb:2}} />
+          <TextField label="우선순위" type="number" value={form.priority} onChange={(e) => setForm(p=>({...p,priority:+e.target.value}))} fullWidth />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialog({open:false})}>취소</Button>
+          <Button variant="contained" onClick={handleSave}>저장</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

@@ -1,37 +1,32 @@
+import { useState } from 'react';
+import { Card, CardContent, TextField, Button, Grid, Typography, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Input, InputNumber, Select, Button, Row, Col } from 'antd';
 import { useQuery } from '@tanstack/react-query';
+import { useSnackbar } from 'notistack';
 import apiClient from '@/services/apiClient';
 import { useCreateSpecification } from '../hooks/useSpecifications';
 import StickyActions from '@/components/common/StickyActions';
-import type { Model, SpecificationCreateDto } from '@dhs/shared';
+import type { Model } from '@dhs/shared';
 
 export default function SpecificationCreatePage() {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const mutation = useCreateSpecification();
-  const [form] = Form.useForm();
-
-  const { data: models } = useQuery({
-    queryKey: ['models', 'select'],
-    queryFn: async () => { const res = await apiClient.get('/models?limit=200'); return res.data.data as Model[]; },
-  });
-
+  const [form, setForm] = useState<any>({});
+  const { data: models } = useQuery({ queryKey: ['models','select'], queryFn: async () => { const r = await apiClient.get('/models?limit=200'); return r.data.data as Model[]; } });
+  const set = (f: string) => (e: any) => setForm((p: any) => ({...p, [f]: e?.target ? e.target.value : e}));
   return (
-    <Card title="사양 등록">
+    <Card><CardContent>
+      <Typography variant="h6" sx={{ mb:1 }}>사양 등록</Typography>
       <StickyActions>
-        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>등록</Button>
-        <Button onClick={() => navigate('/specifications')}>취소</Button>
+        <Button variant="contained" onClick={() => mutation.mutate(form, { onSuccess: () => { enqueueSnackbar('등록됨',{variant:'success'}); navigate('/specifications'); } })}>등록</Button>
+        <Button variant="outlined" onClick={() => navigate('/specifications')}>취소</Button>
       </StickyActions>
-      <Form form={form} layout="vertical" style={{ maxWidth: 600 }}
-        onFinish={(v: SpecificationCreateDto) => mutation.mutate(v, { onSuccess: () => navigate('/specifications') })}>
-        <Row gutter={16}>
-          <Col span={12}><Form.Item name="name" label="사양명" rules={[{ required: true }]}><Input /></Form.Item></Col>
-          <Col span={12}><Form.Item name="priority" label="우선순위"><InputNumber style={{ width: '100%' }} /></Form.Item></Col>
-        </Row>
-        <Form.Item name="modelId" label="모델" rules={[{ required: true }]}>
-          <Select options={models?.map((m) => ({ label: m.name, value: m.id }))} placeholder="모델 선택" />
-        </Form.Item>
-      </Form>
-    </Card>
+      <Grid container spacing={2} sx={{ maxWidth:600 }}>
+        <Grid item xs={6}><TextField label="사양명" value={form.name||''} onChange={set('name')} required /></Grid>
+        <Grid item xs={6}><TextField label="우선순위" type="number" value={form.priority||''} onChange={set('priority')} /></Grid>
+        <Grid item xs={12}><TextField select label="모델" value={form.modelId||''} onChange={set('modelId')} required>{models?.map(m => <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>)}</TextField></Grid>
+      </Grid>
+    </CardContent></Card>
   );
 }

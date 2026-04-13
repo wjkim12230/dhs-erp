@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { message } from 'antd';
 import { drawingApi } from '../api/drawingApi';
 import type { PaginationParams, DrawingCreateDto } from '@dhs/shared';
 

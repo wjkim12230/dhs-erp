@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-import { Spin } from 'antd';
+import { CircularProgress, Box } from '@mui/material';
 import AuthGuard from '@/components/guard/AuthGuard';
 import RoleGuard from '@/components/guard/RoleGuard';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -51,7 +51,7 @@ const AdminListPage = lazy(() => import('@/features/admin-user/pages/AdminListPa
 // Settings
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
 
-const Loading = () => <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
+const Loading = () => <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}><CircularProgress /></Box>;
 
 export default function App() {
   return (

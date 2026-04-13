@@ -1,62 +1,52 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Card, Form, Input, DatePicker, Row, Col, Button } from 'antd';
-import dayjs from 'dayjs';
+import { Card, CardContent, TextField, Button, Grid, Typography, CircularProgress, Box } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { useSnackbar } from 'notistack';
+import dayjs, { Dayjs } from 'dayjs';
 import { useOrdering, useCreateOrdering } from '../hooks/useOrderings';
 import StickyActions from '@/components/common/StickyActions';
 
 export default function OrderingCopyPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const { data, isLoading } = useOrdering(Number(id));
   const mutation = useCreateOrdering();
-  const [form] = Form.useForm();
+  const [form, setForm] = useState<any>({});
+  const [orderDate, setOrderDate] = useState<Dayjs|null>(null);
+  const [dueDate, setDueDate] = useState<Dayjs|null>(null);
+  const [expDate, setExpDate] = useState<Dayjs|null>(null);
 
-  if (isLoading) return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
-  const ordering = data?.data;
-  if (!ordering) return null;
+  useEffect(() => {
+    if (data?.data) {
+      const o = data.data;
+      setForm({...o, orderNumber:''});
+      setOrderDate(o.orderDate ? dayjs(o.orderDate) : null);
+      setDueDate(o.dueDate ? dayjs(o.dueDate) : null);
+      setExpDate(o.expectedDeliveryDate ? dayjs(o.expectedDeliveryDate) : null);
+    }
+  }, [data]);
 
-  const initial = {
-    ...ordering,
-    orderNumber: '',
-    orderDate: ordering.orderDate ? dayjs(ordering.orderDate) : undefined,
-    dueDate: ordering.dueDate ? dayjs(ordering.dueDate) : undefined,
-    expectedDeliveryDate: ordering.expectedDeliveryDate ? dayjs(ordering.expectedDeliveryDate) : undefined,
-  };
-
-  const handleFinish = (values: any) => {
-    mutation.mutate({
-      ...values,
-      modelId: ordering.modelId,
-      orderDate: values.orderDate?.format('YYYY-MM-DD'),
-      dueDate: values.dueDate?.format('YYYY-MM-DD'),
-      expectedDeliveryDate: values.expectedDeliveryDate?.format('YYYY-MM-DD'),
-    }, { onSuccess: () => navigate('/orderings') });
-  };
+  if (isLoading) return <Box sx={{ display:'flex', justifyContent:'center', py:10 }}><CircularProgress /></Box>;
+  const set = (f: string) => (e: any) => setForm((p: any) => ({...p, [f]: e?.target ? e.target.value : e}));
 
   return (
-    <Card title="수주 복사">
+    <Card><CardContent>
+      <Typography variant="h6" sx={{ mb:1 }}>수주 복사</Typography>
       <StickyActions>
-        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>복사 등록</Button>
-        <Button onClick={() => navigate('/orderings')}>취소</Button>
+        <Button variant="contained" onClick={() => mutation.mutate({...form, modelId:data?.data?.modelId, orderDate:orderDate?.format('YYYY-MM-DD'), dueDate:dueDate?.format('YYYY-MM-DD'), expectedDeliveryDate:expDate?.format('YYYY-MM-DD')}, { onSuccess: () => { enqueueSnackbar('복사 등록됨',{variant:'success'}); navigate('/orderings'); } })} disabled={mutation.isPending}>복사 등록</Button>
+        <Button variant="outlined" onClick={() => navigate('/orderings')}>취소</Button>
       </StickyActions>
-      <Form form={form} layout="vertical" initialValues={initial} onFinish={handleFinish} style={{ maxWidth: 800 }}>
-        <Row gutter={16}>
-          <Col span={8}><Form.Item name="customerName" label="고객명" rules={[{ required: true }]}><Input /></Form.Item></Col>
-          <Col span={8}><Form.Item name="orderNumber" label="수주번호" rules={[{ required: true }]}><Input placeholder="새 수주번호 입력" /></Form.Item></Col>
-          <Col span={8}><Form.Item name="siteName" label="현장명"><Input /></Form.Item></Col>
-        </Row>
-        <Row gutter={16}>
-          <Col span={8}><Form.Item name="orderer" label="발주자"><Input /></Form.Item></Col>
-          <Col span={8}><Form.Item name="customerContact" label="연락처"><Input /></Form.Item></Col>
-          <Col span={8}><Form.Item name="quantity" label="수량"><Input /></Form.Item></Col>
-        </Row>
-        <Row gutter={16}>
-          <Col span={8}><Form.Item name="orderDate" label="수주일"><DatePicker style={{ width: '100%' }} /></Form.Item></Col>
-          <Col span={8}><Form.Item name="dueDate" label="납기일"><DatePicker style={{ width: '100%' }} /></Form.Item></Col>
-          <Col span={8}><Form.Item name="expectedDeliveryDate" label="출하예정일"><DatePicker style={{ width: '100%' }} /></Form.Item></Col>
-        </Row>
-        <Form.Item name="memo" label="메모"><Input.TextArea rows={2} /></Form.Item>
-      </Form>
-    </Card>
+      <Grid container spacing={2} sx={{ maxWidth:800 }}>
+        <Grid item xs={12} sm={4}><TextField label="고객명" value={form.customerName||''} onChange={set('customerName')} required /></Grid>
+        <Grid item xs={12} sm={4}><TextField label="수주번호" value={form.orderNumber||''} onChange={set('orderNumber')} required placeholder="새 수주번호" /></Grid>
+        <Grid item xs={12} sm={4}><TextField label="현장명" value={form.siteName||''} onChange={set('siteName')} /></Grid>
+        <Grid item xs={12} sm={4}><DatePicker label="수주일" value={orderDate} onChange={setOrderDate} slotProps={{textField:{size:'small',fullWidth:true}}} /></Grid>
+        <Grid item xs={12} sm={4}><DatePicker label="납기일" value={dueDate} onChange={setDueDate} slotProps={{textField:{size:'small',fullWidth:true}}} /></Grid>
+        <Grid item xs={12} sm={4}><DatePicker label="출하예정일" value={expDate} onChange={setExpDate} slotProps={{textField:{size:'small',fullWidth:true}}} /></Grid>
+        <Grid item xs={12}><TextField label="메모" multiline rows={2} value={form.memo||''} onChange={set('memo')} /></Grid>
+      </Grid>
+    </CardContent></Card>
   );
 }

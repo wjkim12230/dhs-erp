@@ -1,77 +1,69 @@
 import { useState } from 'react';
-import { Button, Row, Typography, Space, Popconfirm, Modal, Form, Input, Select, Tag, message } from 'antd';
-import { PlusOutlined, DeleteOutlined, KeyOutlined } from '@ant-design/icons';
+import { Box, Button, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Chip } from '@mui/material';
+import { Add, Delete, Key } from '@mui/icons-material';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Admin, PaginationParams } from '@dhs/shared';
-import { Role, enumToOptions, ROLE_LABELS } from '@dhs/shared';
-import type { ColumnsType } from 'antd/es/table';
+import { useSnackbar } from 'notistack';
 import { adminApi } from '../api/adminApi';
+import { Role, enumToOptions, ROLE_LABELS } from '@dhs/shared';
 import DataTable from '@/components/common/DataTable';
-
-const { Title } = Typography;
+import type { PaginationParams } from '@dhs/shared';
 
 export default function AdminListPage() {
   const qc = useQueryClient();
-  const [filters, setFilters] = useState<PaginationParams>({ page: 1, limit: 20 });
+  const { enqueueSnackbar } = useSnackbar();
+  const [filters, setFilters] = useState<PaginationParams>({ page:1, limit:20 });
   const { data, isLoading } = useQuery({ queryKey: ['admins', filters], queryFn: () => adminApi.getList(filters) });
-
-  const createMut = useMutation({ mutationFn: adminApi.create,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admins'] }); message.success('관리자가 등록되었습니다.'); } });
-  const deleteMut = useMutation({ mutationFn: adminApi.delete,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admins'] }); message.success('삭제되었습니다.'); } });
-  const resetMut = useMutation({ mutationFn: ({ id, pw }: { id: number; pw: string }) => adminApi.resetPassword(id, pw),
-    onSuccess: () => message.success('비밀번호가 초기화되었습니다.') });
+  const createMut = useMutation({ mutationFn: adminApi.create, onSuccess: () => { qc.invalidateQueries({queryKey:['admins']}); enqueueSnackbar('등록됨',{variant:'success'}); } });
+  const deleteMut = useMutation({ mutationFn: adminApi.delete, onSuccess: () => { qc.invalidateQueries({queryKey:['admins']}); enqueueSnackbar('삭제됨',{variant:'success'}); } });
+  const resetMut = useMutation({ mutationFn: ({id,pw}:{id:number;pw:string}) => adminApi.resetPassword(id,pw), onSuccess: () => enqueueSnackbar('비밀번호 초기화됨',{variant:'success'}) });
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [resetTarget, setResetTarget] = useState<number | null>(null);
-  const [createForm] = Form.useForm();
-  const [resetForm] = Form.useForm();
+  const [resetTarget, setResetTarget] = useState<number|null>(null);
+  const [createForm, setCreateForm] = useState<any>({});
+  const [resetPw, setResetPw] = useState('');
 
-  const columns: ColumnsType<Admin> = [
-    { title: '아이디', dataIndex: 'loginId' },
-    { title: '이름', dataIndex: 'name' },
-    { title: '권한', dataIndex: 'role', render: (v: string) => <Tag>{ROLE_LABELS[v as keyof typeof ROLE_LABELS]}</Tag> },
-    { title: '활성', dataIndex: 'isEnabled', width: 60, render: (v: boolean) => v ? <Tag color="green">활성</Tag> : <Tag>비활성</Tag> },
-    {
-      title: '', key: 'actions', width: 100,
-      render: (_, r) => (
-        <Space>
-          <Button size="small" icon={<KeyOutlined />} onClick={() => { resetForm.resetFields(); setResetTarget(r.id); }} title="비밀번호 초기화" />
-          <Popconfirm title="삭제?" onConfirm={() => deleteMut.mutate(r.id)}><Button size="small" danger icon={<DeleteOutlined />} /></Popconfirm>
-        </Space>
-      ),
-    },
+  const columns: GridColDef[] = [
+    { field: 'loginId', headerName: '아이디', flex: 1 },
+    { field: 'name', headerName: '이름', flex: 1 },
+    { field: 'role', headerName: '권한', width: 100, renderCell: (p: any) => <Chip label={ROLE_LABELS[p.value as keyof typeof ROLE_LABELS]} size="small" /> },
+    { field: 'isEnabled', headerName: '활성', width: 70, renderCell: (p: any) => <Chip label={p.value?'활성':'비활성'} color={p.value?'success':'default'} size="small" /> },
+    { field: 'actions', headerName: '', width: 100, sortable: false, renderCell: (p: any) => (
+      <>
+        <IconButton size="small" onClick={() => { setResetPw(''); setResetTarget(p.row.id); }}><Key fontSize="small" /></IconButton>
+        <IconButton size="small" color="error" onClick={() => { if(confirm('삭제?')) deleteMut.mutate(p.row.id); }}><Delete fontSize="small" /></IconButton>
+      </>
+    )},
   ];
 
   return (
-    <>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>관리자</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => { createForm.resetFields(); setCreateOpen(true); }}>관리자 추가</Button>
-      </Row>
-      <DataTable<Admin> rowKey="id" columns={columns} dataSource={data?.data ?? []} loading={isLoading}
-        total={data?.meta?.total ?? 0} page={filters.page ?? 1} limit={filters.limit ?? 20}
-        onTableChange={({ page, limit }) => setFilters({ page, limit })} />
+    <Box>
+      <Box sx={{ display:'flex', justifyContent:'space-between', alignItems:'center', mb:2 }}>
+        <Typography variant="h5" fontWeight={700}>관리자</Typography>
+        <Button variant="contained" startIcon={<Add />} onClick={() => { setCreateForm({}); setCreateOpen(true); }}>관리자 추가</Button>
+      </Box>
+      <DataTable columns={columns} rows={data?.data??[]} total={data?.meta?.total??0} page={(filters.page??1)-1} pageSize={filters.limit??20} loading={isLoading} onPaginationChange={(m: GridPaginationModel) => setFilters({page:m.page+1,limit:m.pageSize})} />
 
-      <Modal title="관리자 추가" open={createOpen} onOk={() => createForm.validateFields().then((v) => createMut.mutate(v, { onSuccess: () => setCreateOpen(false) }))}
-        onCancel={() => setCreateOpen(false)} confirmLoading={createMut.isPending} okText="저장" cancelText="취소">
-        <Form form={createForm} layout="vertical">
-          <Form.Item name="loginId" label="아이디" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="name" label="이름" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="password" label="비밀번호" rules={[{ required: true, min: 4 }]}><Input.Password /></Form.Item>
-          <Form.Item name="role" label="권한" rules={[{ required: true }]}>
-            <Select options={enumToOptions(Role, ROLE_LABELS)} />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>관리자 추가</DialogTitle>
+        <DialogContent sx={{pt:'16px !important'}}>
+          <TextField label="아이디" value={createForm.loginId||''} onChange={(e) => setCreateForm((p: any)=>({...p,loginId:e.target.value}))} fullWidth sx={{mb:2}} />
+          <TextField label="이름" value={createForm.name||''} onChange={(e) => setCreateForm((p: any)=>({...p,name:e.target.value}))} fullWidth sx={{mb:2}} />
+          <TextField label="비밀번호" type="password" value={createForm.password||''} onChange={(e) => setCreateForm((p: any)=>({...p,password:e.target.value}))} fullWidth sx={{mb:2}} />
+          <TextField select label="권한" value={createForm.role||''} onChange={(e) => setCreateForm((p: any)=>({...p,role:e.target.value}))} fullWidth>
+            {enumToOptions(Role, ROLE_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+          </TextField>
+        </DialogContent>
+        <DialogActions><Button onClick={() => setCreateOpen(false)}>취소</Button><Button variant="contained" onClick={() => createMut.mutate(createForm, { onSuccess: () => setCreateOpen(false) })}>저장</Button></DialogActions>
+      </Dialog>
 
-      <Modal title="비밀번호 초기화" open={resetTarget !== null}
-        onOk={() => resetForm.validateFields().then((v) => resetMut.mutate({ id: resetTarget!, pw: v.password }, { onSuccess: () => setResetTarget(null) }))}
-        onCancel={() => setResetTarget(null)} confirmLoading={resetMut.isPending} okText="초기화" cancelText="취소">
-        <Form form={resetForm} layout="vertical">
-          <Form.Item name="password" label="새 비밀번호" rules={[{ required: true, min: 4 }]}><Input.Password /></Form.Item>
-        </Form>
-      </Modal>
-    </>
+      <Dialog open={resetTarget !== null} onClose={() => setResetTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>비밀번호 초기화</DialogTitle>
+        <DialogContent sx={{pt:'16px !important'}}>
+          <TextField label="새 비밀번호" type="password" value={resetPw} onChange={(e) => setResetPw(e.target.value)} fullWidth />
+        </DialogContent>
+        <DialogActions><Button onClick={() => setResetTarget(null)}>취소</Button><Button variant="contained" onClick={() => resetMut.mutate({id:resetTarget!,pw:resetPw}, { onSuccess: () => setResetTarget(null) })}>초기화</Button></DialogActions>
+      </Dialog>
+    </Box>
   );
 }

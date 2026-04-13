@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { message } from 'antd';
 import { specificationApi } from '../api/specificationApi';
 import type { PaginationParams, SpecificationCreateDto, SpecificationDetailCreateDto } from '@dhs/shared';
 

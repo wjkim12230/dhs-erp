@@ -1,41 +1,32 @@
+import { useState } from 'react';
+import { Card, CardContent, TextField, Button, Grid, Typography, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, InputNumber, Select, Button, Row, Col } from 'antd';
 import { useQuery } from '@tanstack/react-query';
+import { useSnackbar } from 'notistack';
 import apiClient from '@/services/apiClient';
 import { useCreateDrawing } from '../hooks/useDrawings';
 import ImageUpload from '@/components/common/ImageUpload';
 import StickyActions from '@/components/common/StickyActions';
-import type { Model, DrawingCreateDto } from '@dhs/shared';
+import type { Model } from '@dhs/shared';
 
 export default function DrawingCreatePage() {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const mutation = useCreateDrawing();
-  const [form] = Form.useForm();
-  const { data: models } = useQuery({
-    queryKey: ['models', 'select'],
-    queryFn: async () => { const res = await apiClient.get('/models?limit=200'); return res.data.data as Model[]; },
-  });
-
+  const [form, setForm] = useState<any>({});
+  const { data: models } = useQuery({ queryKey: ['models','select'], queryFn: async () => { const r = await apiClient.get('/models?limit=200'); return r.data.data as Model[]; } });
   return (
-    <Card title="도면 등록">
+    <Card><CardContent>
+      <Typography variant="h6" sx={{ mb:1 }}>도면 등록</Typography>
       <StickyActions>
-        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>등록</Button>
-        <Button onClick={() => navigate('/drawings')}>취소</Button>
+        <Button variant="contained" onClick={() => mutation.mutate(form, { onSuccess: () => { enqueueSnackbar('등록됨',{variant:'success'}); navigate('/drawings'); } })}>등록</Button>
+        <Button variant="outlined" onClick={() => navigate('/drawings')}>취소</Button>
       </StickyActions>
-      <Form form={form} layout="vertical" style={{ maxWidth: 600 }}
-        onFinish={(v: DrawingCreateDto) => mutation.mutate(v, { onSuccess: () => navigate('/drawings') })}>
-        <Form.Item name="imageUrl" label="도면 이미지" rules={[{ required: true, message: '이미지를 업로드해주세요' }]}>
-          <ImageUpload />
-        </Form.Item>
-        <Row gutter={16}>
-          <Col span={12}><Form.Item name="lengthCount" label="길이수"><InputNumber style={{ width: '100%' }} /></Form.Item></Col>
-          <Col span={12}>
-            <Form.Item name="modelId" label="모델" rules={[{ required: true }]}>
-              <Select options={models?.map((m) => ({ label: m.name, value: m.id }))} placeholder="모델 선택" />
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
-    </Card>
+      <Grid container spacing={2} sx={{ maxWidth:600 }}>
+        <Grid item xs={12}><ImageUpload value={form.imageUrl} onChange={(url) => setForm((p: any) => ({...p, imageUrl: url}))} /></Grid>
+        <Grid item xs={6}><TextField label="길이수" type="number" value={form.lengthCount||''} onChange={(e) => setForm((p: any) => ({...p, lengthCount: +e.target.value}))} /></Grid>
+        <Grid item xs={6}><TextField select label="모델" value={form.modelId||''} onChange={(e) => setForm((p: any) => ({...p, modelId: +e.target.value}))} required>{models?.map(m => <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>)}</TextField></Grid>
+      </Grid>
+    </CardContent></Card>
   );
 }

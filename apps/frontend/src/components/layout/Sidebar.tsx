@@ -1,118 +1,125 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu } from 'antd';
-import type { MenuProps } from 'antd';
 import {
-  DashboardOutlined,
-  TeamOutlined,
-  AppstoreOutlined,
-  FileTextOutlined,
-  SettingOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import { useSidebarStore } from '@/stores/sidebarStore';
+  Box, List, ListItemButton, ListItemIcon, ListItemText,
+  Collapse, Divider,
+} from '@mui/material';
+import {
+  Dashboard, People, Inventory, Description,
+  Settings, Person, ExpandLess, ExpandMore,
+  ViewList, Category, Engineering, Draw, Checklist,
+} from '@mui/icons-material';
+import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 
-const { Sider } = Layout;
-
-type MenuItem = Required<MenuProps>['items'][number];
-
 interface SidebarProps {
+  collapsed?: boolean;
   onNavigate?: () => void;
 }
 
-export default function Sidebar({ onNavigate }: SidebarProps = {}) {
-  const collapsed = useSidebarStore((s) => s.collapsed);
-  const setCollapsed = useSidebarStore((s) => s.setCollapsed);
-  const hasRole = useAuthStore((s) => s.hasRole);
+interface NavItem {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  children?: { key: string; label: string; icon?: React.ReactNode }[];
+  roles?: string[];
+}
+
+export default function Sidebar({ collapsed, onNavigate }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const hasRole = useAuthStore((s) => s.hasRole);
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({ product: true });
 
-  const menuItems: MenuItem[] = [
+  const navItems: NavItem[] = [
+    { key: '/dashboard', label: '대시보드', icon: <Dashboard /> },
+    { key: '/employees', label: '직원관리', icon: <People /> },
     {
-      key: '/dashboard',
-      icon: <DashboardOutlined />,
-      label: '대시보드',
-    },
-    {
-      key: '/employees',
-      icon: <TeamOutlined />,
-      label: '직원관리',
-    },
-    {
-      key: 'product',
-      icon: <AppstoreOutlined />,
-      label: '제품관리',
+      key: 'product', label: '제품관리', icon: <Inventory />,
       children: [
-        { key: '/model-groups', label: '모델그룹' },
-        { key: '/models', label: '모델' },
-        { key: '/specifications', label: '사양' },
-        { key: '/drawings', label: '도면' },
-        { key: '/check-items', label: '검사항목' },
+        { key: '/model-groups', label: '모델그룹', icon: <Category /> },
+        { key: '/models', label: '모델', icon: <ViewList /> },
+        { key: '/specifications', label: '사양', icon: <Engineering /> },
+        { key: '/drawings', label: '도면', icon: <Draw /> },
+        { key: '/check-items', label: '검사항목', icon: <Checklist /> },
       ],
     },
-    {
-      key: '/orderings',
-      icon: <FileTextOutlined />,
-      label: '수주관리',
-    },
-    ...(hasRole('SUPER')
-      ? [
-          {
-            key: 'system',
-            icon: <SettingOutlined />,
-            label: '시스템',
-            children: [
-              { key: '/admins', icon: <UserOutlined />, label: '관리자' },
-              { key: '/settings', icon: <SettingOutlined />, label: '설정' },
-            ],
-          } as MenuItem,
-        ]
-      : []),
+    { key: '/orderings', label: '수주관리', icon: <Description /> },
+    ...(hasRole('SUPER') ? [{
+      key: 'system', label: '시스템', icon: <Settings />,
+      children: [
+        { key: '/admins', label: '관리자', icon: <Person /> },
+        { key: '/settings', label: '설정', icon: <Settings /> },
+      ],
+    }] : []),
   ];
 
-  const selectedKey = '/' + location.pathname.split('/').filter(Boolean)[0];
+  const handleClick = (item: NavItem) => {
+    if (item.children) {
+      setOpenMenus((prev) => ({ ...prev, [item.key]: !prev[item.key] }));
+    } else {
+      navigate(item.key);
+      onNavigate?.();
+    }
+  };
 
-  const openKeys = menuItems
-    .filter((item: any) => item?.children?.some((child: any) => child.key === selectedKey))
-    .map((item: any) => item?.key as string);
+  const isActive = (key: string) => location.pathname === key || location.pathname.startsWith(key + '/');
 
   return (
-    <Sider
-      collapsible
-      collapsed={collapsed}
-      onCollapse={setCollapsed}
-      style={{ minHeight: '100vh', background: '#fff', borderRight: '1px solid #f0f0f0' }}
-      theme="light"
-    >
-      <div
-        style={{
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: collapsed ? '12px 8px' : '12px 16px',
-          borderBottom: '1px solid #f0f0f0',
-          cursor: 'pointer',
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box
+        sx={{
+          height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          px: 2, borderBottom: '1px solid #e0e0e0', cursor: 'pointer',
         }}
-        onClick={() => navigate('/dashboard')}
+        onClick={() => { navigate('/dashboard'); onNavigate?.(); }}
       >
-        <img
-          src="/logo.png"
-          alt="DHS"
-          style={{ height: 32, objectFit: 'contain' }}
-        />
+        <img src="/logo.png" alt="DHS" style={{ height: 36, objectFit: 'contain' }} />
         {!collapsed && (
-          <span style={{ color: '#005BAC', fontSize: 14, fontWeight: 700, marginLeft: 8 }}>ERP</span>
+          <Box component="span" sx={{ color: '#005BAC', fontSize: 15, fontWeight: 700, ml: 1 }}>ERP</Box>
         )}
-      </div>
-      <Menu
-        theme="light"
-        mode="inline"
-        selectedKeys={[selectedKey]}
-        defaultOpenKeys={openKeys}
-        items={menuItems}
-        onClick={({ key }) => { navigate(key); onNavigate?.(); }}
-      />
-    </Sider>
+      </Box>
+
+      <List sx={{ flex: 1, py: 1 }}>
+        {navItems.map((item) => (
+          <Box key={item.key}>
+            <ListItemButton
+              onClick={() => handleClick(item)}
+              selected={!item.children && isActive(item.key)}
+              sx={{
+                mx: 1, borderRadius: 2, mb: 0.5,
+                '&.Mui-selected': { bgcolor: 'primary.main', color: '#fff', '& .MuiListItemIcon-root': { color: '#fff' } },
+                '&.Mui-selected:hover': { bgcolor: 'primary.dark' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>{item.icon}</ListItemIcon>
+              {!collapsed && <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 14, fontWeight: 500 }} />}
+              {!collapsed && item.children && (openMenus[item.key] ? <ExpandLess /> : <ExpandMore />)}
+            </ListItemButton>
+
+            {item.children && (
+              <Collapse in={openMenus[item.key]} unmountOnExit>
+                <List disablePadding>
+                  {item.children.map((child) => (
+                    <ListItemButton
+                      key={child.key}
+                      onClick={() => { navigate(child.key); onNavigate?.(); }}
+                      selected={isActive(child.key)}
+                      sx={{
+                        pl: collapsed ? 2 : 5, mx: 1, borderRadius: 2, mb: 0.3,
+                        '&.Mui-selected': { bgcolor: 'primary.main', color: '#fff', '& .MuiListItemIcon-root': { color: '#fff' } },
+                        '&.Mui-selected:hover': { bgcolor: 'primary.dark' },
+                      }}
+                    >
+                      {child.icon && <ListItemIcon sx={{ minWidth: 30, color: 'inherit' }}>{child.icon}</ListItemIcon>}
+                      {!collapsed && <ListItemText primary={child.label} primaryTypographyProps={{ fontSize: 13 }} />}
+                    </ListItemButton>
+                  ))}
+                </List>
+              </Collapse>
+            )}
+          </Box>
+        ))}
+      </List>
+    </Box>
   );
 }

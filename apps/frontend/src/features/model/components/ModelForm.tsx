@@ -1,4 +1,5 @@
-import { Form, Input, InputNumber, Select, Button, Card, Row, Col } from 'antd';
+import { useState } from 'react';
+import { Card, CardContent, TextField, Button, Grid, Typography, MenuItem } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import type { Model, ModelCreateDto } from '@dhs/shared';
 import { Department, enumToOptions, DEPARTMENT_LABELS } from '@dhs/shared';
@@ -8,34 +9,34 @@ import StickyActions from '@/components/common/StickyActions';
 interface Props { initialValues?: Model; onSubmit: (v: ModelCreateDto) => void; loading?: boolean; }
 
 export default function ModelForm({ initialValues, onSubmit, loading }: Props) {
-  const [form] = Form.useForm();
   const navigate = useNavigate();
   const { data: groupsData } = useModelGroups({ limit: 100 });
   const isEdit = !!initialValues;
+  const [form, setForm] = useState<any>(initialValues ?? {});
+  const set = (f: string) => (e: any) => setForm((p: any) => ({ ...p, [f]: e?.target ? e.target.value : e }));
 
   return (
-    <Card title={isEdit ? '모델 수정' : '모델 등록'}>
+    <Card><CardContent>
+      <Typography variant="h6" sx={{ mb: 1 }}>{isEdit ? '모델 수정' : '모델 등록'}</Typography>
       <StickyActions>
-        <Button type="primary" loading={loading} onClick={() => form.submit()}>{isEdit ? '수정' : '등록'}</Button>
-        <Button onClick={() => navigate('/models')}>취소</Button>
+        <Button variant="contained" onClick={() => onSubmit(form)} disabled={loading}>{isEdit ? '수정' : '등록'}</Button>
+        <Button variant="outlined" onClick={() => navigate('/models')}>취소</Button>
       </StickyActions>
-      <Form form={form} layout="vertical" initialValues={initialValues} onFinish={onSubmit} style={{ maxWidth: 700 }}>
-        <Row gutter={16}>
-          <Col span={12}><Form.Item name="name" label="모델명" rules={[{ required: true }]}><Input /></Form.Item></Col>
-          <Col span={12}><Form.Item name="orderingName" label="수주명"><Input /></Form.Item></Col>
-        </Row>
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item name="modelGroupId" label="모델그룹" rules={[{ required: true }]}>
-              <Select options={groupsData?.data?.map((g) => ({ label: g.name, value: g.id }))} placeholder="그룹 선택" />
-            </Form.Item>
-          </Col>
-          <Col span={12}><Form.Item name="priority" label="우선순위"><InputNumber style={{ width: '100%' }} /></Form.Item></Col>
-        </Row>
-        <Form.Item name="departments" label="부서">
-          <Select mode="multiple" options={enumToOptions(Department, DEPARTMENT_LABELS)} placeholder="부서 선택" />
-        </Form.Item>
-      </Form>
-    </Card>
+      <Grid container spacing={2} sx={{ maxWidth: 700 }}>
+        <Grid item xs={12} sm={6}><TextField label="모델명" value={form.name||''} onChange={set('name')} required /></Grid>
+        <Grid item xs={12} sm={6}><TextField label="수주명" value={form.orderingName||''} onChange={set('orderingName')} /></Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField select label="모델그룹" value={form.modelGroupId||''} onChange={set('modelGroupId')} required>
+            {groupsData?.data?.map((g) => <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>)}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} sm={6}><TextField label="우선순위" type="number" value={form.priority||''} onChange={set('priority')} /></Grid>
+        <Grid item xs={12}>
+          <TextField select label="부서" value={form.departments||[]} onChange={(e) => setForm((p: any) => ({...p, departments: e.target.value}))} SelectProps={{multiple: true}}>
+            {enumToOptions(Department, DEPARTMENT_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+          </TextField>
+        </Grid>
+      </Grid>
+    </CardContent></Card>
   );
 }

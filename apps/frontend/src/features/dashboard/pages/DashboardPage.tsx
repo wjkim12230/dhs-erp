@@ -1,95 +1,35 @@
-import { Row, Col, Card, Statistic, Typography } from 'antd';
-import {
-  TeamOutlined,
-  FileTextOutlined,
-  FormOutlined,
-  CheckCircleOutlined,
-} from '@ant-design/icons';
+import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
+import { People, Description, CheckCircle, Assignment } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 
-const { Title } = Typography;
+function StatCard({ title, value, icon, color }: { title: string; value: number | string; icon: React.ReactNode; color: string }) {
+  return (
+    <Card>
+      <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${color}15`, color }}>{icon}</Box>
+        <Box>
+          <Typography variant="body2" color="text.secondary">{title}</Typography>
+          <Typography variant="h5" fontWeight={700}>{value}</Typography>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function DashboardPage() {
-  const { data: employeeData } = useQuery({
-    queryKey: ['dashboard', 'employees'],
-    queryFn: async () => {
-      const res = await apiClient.get('/employees?limit=1&employmentStatus=ACTIVE');
-      return res.data.meta?.total ?? 0;
-    },
-  });
-
-  const { data: orderingData } = useQuery({
-    queryKey: ['dashboard', 'orderings'],
-    queryFn: async () => {
-      const res = await apiClient.get('/orderings?limit=1&status=ACTIVE');
-      return res.data.meta?.total ?? 0;
-    },
-  });
-
-  const { data: completedData } = useQuery({
-    queryKey: ['dashboard', 'orderings-completed'],
-    queryFn: async () => {
-      const res = await apiClient.get('/orderings?limit=1&status=COMPLETED');
-      return res.data.meta?.total ?? 0;
-    },
-  });
-
-  const { data: orderFormData } = useQuery({
-    queryKey: ['dashboard', 'order-forms'],
-    queryFn: async () => {
-      const res = await apiClient.get('/order-forms?limit=1&status=ACTIVE');
-      return res.data.meta?.total ?? 0;
-    },
-  });
+  const { data: emp } = useQuery({ queryKey: ['dashboard', 'employees'], queryFn: async () => { const r = await apiClient.get('/employees?limit=1&employmentStatus=ACTIVE'); return r.data.meta?.total ?? 0; } });
+  const { data: ord } = useQuery({ queryKey: ['dashboard', 'orderings'], queryFn: async () => { const r = await apiClient.get('/orderings?limit=1&status=ACTIVE'); return r.data.meta?.total ?? 0; } });
+  const { data: comp } = useQuery({ queryKey: ['dashboard', 'completed'], queryFn: async () => { const r = await apiClient.get('/orderings?limit=1&status=COMPLETED'); return r.data.meta?.total ?? 0; } });
 
   return (
-    <>
-      <Title level={4} style={{ marginBottom: 24 }}>
-        대시보드
-      </Title>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="재직 직원"
-              value={employeeData ?? '-'}
-              prefix={<TeamOutlined />}
-              valueStyle={{ color: '#1677ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="진행중 수주"
-              value={orderingData ?? '-'}
-              prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#fa8c16' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="완료 수주"
-              value={completedData ?? '-'}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="진행중 발주서"
-              value={orderFormData ?? '-'}
-              prefix={<FormOutlined />}
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-    </>
+    <Box>
+      <Typography variant="h5" fontWeight={700} sx={{ mb: 3 }}>대시보드</Typography>
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="재직 직원" value={emp ?? '-'} icon={<People />} color="#005BAC" /></Grid>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="진행중 수주" value={ord ?? '-'} icon={<Description />} color="#ed6c02" /></Grid>
+        <Grid item xs={12} sm={6} md={3}><StatCard title="완료 수주" value={comp ?? '-'} icon={<CheckCircle />} color="#2e7d32" /></Grid>
+      </Grid>
+    </Box>
   );
 }

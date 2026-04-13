@@ -1,14 +1,16 @@
-import { Select } from 'antd';
-import type { SelectProps } from 'antd';
+import { Autocomplete, TextField } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import type { Employee } from '@dhs/shared';
 
-interface EmployeeSelectProps extends Omit<SelectProps, 'options'> {
+interface EmployeeSelectProps {
+  value?: number | null;
+  onChange?: (value: number | null) => void;
+  label?: string;
   department?: string;
 }
 
-export default function EmployeeSelect({ department, ...props }: EmployeeSelectProps) {
+export default function EmployeeSelect({ value, onChange, label = '직원 선택', department }: EmployeeSelectProps) {
   const { data, isLoading } = useQuery({
     queryKey: ['employees', 'select', department],
     queryFn: async () => {
@@ -19,20 +21,18 @@ export default function EmployeeSelect({ department, ...props }: EmployeeSelectP
     },
   });
 
+  const options = data ?? [];
+  const selected = options.find((e) => e.id === value) ?? null;
+
   return (
-    <Select
-      showSearch
-      allowClear
-      placeholder="직원 선택"
+    <Autocomplete
+      options={options}
+      getOptionLabel={(o) => `${o.name} (${o.employeeNumber})`}
+      value={selected}
+      onChange={(_, v) => onChange?.(v?.id ?? null)}
       loading={isLoading}
-      filterOption={(input, option) =>
-        (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-      }
-      options={data?.map((emp) => ({
-        label: `${emp.name} (${emp.employeeNumber})`,
-        value: emp.id,
-      }))}
-      {...props}
+      size="small"
+      renderInput={(params) => <TextField {...params} label={label} />}
     />
   );
 }

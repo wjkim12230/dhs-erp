@@ -1,158 +1,54 @@
-import { Form, Input, Select, DatePicker, InputNumber, Row, Col, Button, Card } from 'antd';
+import { useState } from 'react';
+import { Box, Card, CardContent, TextField, Button, Grid, Typography, MenuItem } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
 import { useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import type { Employee, EmployeeCreateDto } from '@dhs/shared';
-import DaumAddressSearch from '@/components/common/DaumAddressSearch';
+import { Position, JobGroup, Headquarter, Department, Gender, EmploymentStatus, enumToOptions, POSITION_LABELS, JOB_GROUP_LABELS, HEADQUARTER_LABELS, DEPARTMENT_LABELS, GENDER_LABELS, EMPLOYMENT_STATUS_LABELS } from '@dhs/shared';
 import StickyActions from '@/components/common/StickyActions';
-import {
-  Position,
-  JobGroup,
-  Headquarter,
-  Department,
-  Gender,
-  EmploymentStatus,
-  enumToOptions,
-  POSITION_LABELS,
-  JOB_GROUP_LABELS,
-  HEADQUARTER_LABELS,
-  DEPARTMENT_LABELS,
-  GENDER_LABELS,
-  EMPLOYMENT_STATUS_LABELS,
-} from '@dhs/shared';
+import DaumAddressSearch from '@/components/common/DaumAddressSearch';
 
-interface EmployeeFormProps {
-  initialValues?: Employee;
-  onSubmit: (values: EmployeeCreateDto) => void;
-  loading?: boolean;
-}
+interface Props { initialValues?: Employee; onSubmit: (v: EmployeeCreateDto) => void; loading?: boolean; }
 
-export default function EmployeeForm({ initialValues, onSubmit, loading }: EmployeeFormProps) {
-  const [form] = Form.useForm();
+export default function EmployeeForm({ initialValues, onSubmit, loading }: Props) {
   const navigate = useNavigate();
   const isEdit = !!initialValues;
+  const [form, setForm] = useState<any>(initialValues ?? {});
+  const [birthDate, setBirthDate] = useState<Dayjs | null>(initialValues?.birthDate ? dayjs(initialValues.birthDate) : null);
+  const [joinDate, setJoinDate] = useState<Dayjs | null>(initialValues?.joinDate ? dayjs(initialValues.joinDate) : null);
 
-  const handleFinish = (values: any) => {
-    const data: EmployeeCreateDto = {
-      ...values,
-      birthDate: values.birthDate?.format('YYYY-MM-DD'),
-      joinDate: values.joinDate?.format('YYYY-MM-DD'),
-    };
-    onSubmit(data);
+  const set = (field: string) => (e: any) => setForm((p: any) => ({ ...p, [field]: e?.target ? e.target.value : e }));
+
+  const handleSubmit = () => {
+    onSubmit({ ...form, birthDate: birthDate?.format('YYYY-MM-DD'), joinDate: joinDate?.format('YYYY-MM-DD') });
   };
 
-  const initial = initialValues
-    ? {
-        ...initialValues,
-        birthDate: initialValues.birthDate ? dayjs(initialValues.birthDate) : undefined,
-        joinDate: initialValues.joinDate ? dayjs(initialValues.joinDate) : undefined,
-      }
-    : undefined;
-
   return (
-    <Card title={isEdit ? '직원 수정' : '직원 등록'}>
-      <StickyActions>
-        <Button type="primary" loading={loading} onClick={() => form.submit()}>
-          {isEdit ? '수정' : '등록'}
-        </Button>
-        <Button onClick={() => navigate('/employees')}>취소</Button>
-      </StickyActions>
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={initial}
-        onFinish={handleFinish}
-        style={{ maxWidth: 900 }}
-      >
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="name" label="이름" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="employeeNumber" label="사번" rules={[{ required: true }]}>
-              <Input disabled={isEdit} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="gender" label="성별" rules={[{ required: true }]}>
-              <Select options={enumToOptions(Gender, GENDER_LABELS)} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="position" label="직급" rules={[{ required: true }]}>
-              <Select options={enumToOptions(Position, POSITION_LABELS)} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="jobGroup" label="직군" rules={[{ required: true }]}>
-              <Select options={enumToOptions(JobGroup, JOB_GROUP_LABELS)} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="headquarter" label="본부" rules={[{ required: true }]}>
-              <Select options={enumToOptions(Headquarter, HEADQUARTER_LABELS)} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="department" label="부서" rules={[{ required: true }]}>
-              <Select options={enumToOptions(Department, DEPARTMENT_LABELS)} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="employmentStatus" label="재직상태">
-              <Select options={enumToOptions(EmploymentStatus, EMPLOYMENT_STATUS_LABELS)} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="salary" label="급여">
-              <InputNumber style={{ width: '100%' }} formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="contact" label="연락처">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="internalNumber" label="내선번호">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="birthDate" label="생년월일">
-              <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="joinDate" label="입사일">
-              <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
-          <Col span={16}>
-            <Form.Item name="address" label="주소">
-              <DaumAddressSearch />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Form.Item name="memo" label="메모">
-          <Input.TextArea rows={3} />
-        </Form.Item>
-
-      </Form>
+    <Card>
+      <CardContent>
+        <Typography variant="h6" sx={{ mb: 1 }}>{isEdit ? '직원 수정' : '직원 등록'}</Typography>
+        <StickyActions>
+          <Button variant="contained" onClick={handleSubmit} disabled={loading}>{isEdit ? '수정' : '등록'}</Button>
+          <Button variant="outlined" onClick={() => navigate('/employees')}>취소</Button>
+        </StickyActions>
+        <Grid container spacing={2} sx={{ maxWidth: 900 }}>
+          <Grid item xs={12} sm={4}><TextField label="이름" value={form.name || ''} onChange={set('name')} required /></Grid>
+          <Grid item xs={12} sm={4}><TextField label="사번" value={form.employeeNumber || ''} onChange={set('employeeNumber')} required disabled={isEdit} /></Grid>
+          <Grid item xs={12} sm={4}><TextField select label="성별" value={form.gender || ''} onChange={set('gender')} required>{enumToOptions(Gender, GENDER_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
+          <Grid item xs={12} sm={4}><TextField select label="직급" value={form.position || ''} onChange={set('position')} required>{enumToOptions(Position, POSITION_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
+          <Grid item xs={12} sm={4}><TextField select label="직군" value={form.jobGroup || ''} onChange={set('jobGroup')} required>{enumToOptions(JobGroup, JOB_GROUP_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
+          <Grid item xs={12} sm={4}><TextField select label="본부" value={form.headquarter || ''} onChange={set('headquarter')} required>{enumToOptions(Headquarter, HEADQUARTER_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
+          <Grid item xs={12} sm={4}><TextField select label="부서" value={form.department || ''} onChange={set('department')} required>{enumToOptions(Department, DEPARTMENT_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
+          <Grid item xs={12} sm={4}><TextField select label="재직상태" value={form.employmentStatus || 'ACTIVE'} onChange={set('employmentStatus')}>{enumToOptions(EmploymentStatus, EMPLOYMENT_STATUS_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>
+          <Grid item xs={12} sm={4}><TextField label="급여" type="number" value={form.salary || ''} onChange={set('salary')} /></Grid>
+          <Grid item xs={12} sm={4}><TextField label="연락처" value={form.contact || ''} onChange={set('contact')} /></Grid>
+          <Grid item xs={12} sm={4}><TextField label="내선번호" value={form.internalNumber || ''} onChange={set('internalNumber')} /></Grid>
+          <Grid item xs={12} sm={4}><DatePicker label="생년월일" value={birthDate} onChange={setBirthDate} slotProps={{ textField: { size: 'small', fullWidth: true } }} /></Grid>
+          <Grid item xs={12} sm={4}><DatePicker label="입사일" value={joinDate} onChange={setJoinDate} slotProps={{ textField: { size: 'small', fullWidth: true } }} /></Grid>
+          <Grid item xs={12} sm={8}><DaumAddressSearch value={form.address} onChange={(v) => setForm((p: any) => ({ ...p, address: v }))} /></Grid>
+          <Grid item xs={12}><TextField label="메모" multiline rows={3} value={form.memo || ''} onChange={set('memo')} /></Grid>
+        </Grid>
+      </CardContent>
     </Card>
   );
 }

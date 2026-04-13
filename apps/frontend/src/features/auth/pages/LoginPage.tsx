@@ -1,58 +1,46 @@
-import { Card, Form, Input, Button, Typography, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import { Box, Card, CardContent, TextField, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 import { useAuthStore } from '@/stores/authStore';
-
-const { Title } = Typography;
 
 export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
-  const [form] = Form.useForm();
+  const { enqueueSnackbar } = useSnackbar();
+  const [loginId, setLoginId] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (values: { loginId: string; password: string }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      await login(values.loginId, values.password);
-      message.success('로그인 성공');
+      await login(loginId, password);
+      enqueueSnackbar('로그인 성공', { variant: 'success' });
       navigate('/dashboard');
     } catch {
-      message.error('아이디 또는 비밀번호가 올바르지 않습니다.');
-    }
+      enqueueSnackbar('아이디 또는 비밀번호가 올바르지 않습니다.', { variant: 'error' });
+    } finally { setLoading(false); }
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#f0f2f5',
-      }}
-    >
-      <Card style={{ width: '100%', maxWidth: 400, margin: '0 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <img src="/logo.png" alt="DHS" style={{ height: 48, marginBottom: 12 }} />
-          <br />
-          <Typography.Text type="secondary">관리자 로그인</Typography.Text>
-        </div>
-        <Form form={form} onFinish={handleSubmit} layout="vertical" size="large">
-          <Form.Item name="loginId" rules={[{ required: true, message: '아이디를 입력하세요' }]}>
-            <Input prefix={<UserOutlined />} placeholder="아이디" />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: '비밀번호를 입력하세요' }]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="비밀번호" />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              로그인
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
+      <Card sx={{ width: '100%', maxWidth: 400, mx: 2 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <img src="/logo.png" alt="DHS" style={{ height: 48, marginBottom: 12 }} />
+            <Typography variant="body2" color="text.secondary">관리자 로그인</Typography>
+          </Box>
+          <form onSubmit={handleSubmit}>
+            <TextField label="아이디" value={loginId} onChange={(e) => setLoginId(e.target.value)} required fullWidth sx={{ mb: 2 }} />
+            <TextField label="비밀번호" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required fullWidth sx={{ mb: 3 }} />
+            <Button type="submit" variant="contained" fullWidth size="large" disabled={loading}>
+              {loading ? '로그인 중...' : '로그인'}
             </Button>
-          </Form.Item>
-        </Form>
+          </form>
+        </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }
