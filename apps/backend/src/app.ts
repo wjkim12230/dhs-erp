@@ -17,10 +17,10 @@ import settingsRoutes from './modules/settings/settings.routes';
 
 const app = express();
 
-// Middleware
-app.use(helmet());
+// Middleware — CORS must be before helmet
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',');
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
