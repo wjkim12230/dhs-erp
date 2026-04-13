@@ -22,7 +22,7 @@ export default function DrawingUpdatePage() {
         <Button variant="contained" onClick={() => mutation.mutate({ id: +id!, data: { imageUrl: form.imageUrl, lengthCount: form.lengthCount, version: form.version } }, { onSuccess: () => { enqueueSnackbar('수정됨',{variant:'success'}); navigate('/drawings'); } })}>수정</Button>
         <Button variant="outlined" onClick={() => navigate('/drawings')}>취소</Button>
       </StickyActions>
-      <Grid container spacing={2} sx={{ maxWidth:600 }}>
+      <Grid container spacing={3} sx={{ width: '100%' }}>
         <Grid item xs={12}><ImageUpload value={form.imageUrl} onChange={(url) => setForm((p: any) => ({...p, imageUrl: url}))} /></Grid>
         <Grid item xs={6}><TextField label="길이수" type="number" value={form.lengthCount||''} onChange={(e) => setForm((p: any) => ({...p, lengthCount: +e.target.value}))} /></Grid>
       </Grid>

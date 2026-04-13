@@ -31,7 +31,7 @@ export default function EmployeeForm({ initialValues, onSubmit, loading }: Props
           <Button variant="contained" onClick={handleSubmit} disabled={loading}>{isEdit ? '수정' : '등록'}</Button>
           <Button variant="outlined" onClick={() => navigate('/employees')}>취소</Button>
         </StickyActions>
-        <Grid container spacing={2} sx={{ maxWidth: 900 }}>
+        <Grid container spacing={3} sx={{ width: "100%" }}>
           <Grid item xs={12} sm={4}><TextField label="이름" value={form.name || ''} onChange={set('name')} required /></Grid>
           <Grid item xs={12} sm={4}><TextField label="사번" value={form.employeeNumber || ''} onChange={set('employeeNumber')} required disabled={isEdit} /></Grid>
           <Grid item xs={12} sm={4}><TextField select label="성별" value={form.gender || ''} onChange={set('gender')} required>{enumToOptions(Gender, GENDER_LABELS).map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}</TextField></Grid>

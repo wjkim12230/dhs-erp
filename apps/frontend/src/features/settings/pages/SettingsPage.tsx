@@ -18,7 +18,7 @@ export default function SettingsPage() {
   return (
     <Box>
       <Typography variant="h5" fontWeight={700} sx={{ mb:3 }}>앱 설정</Typography>
-      <Card sx={{ maxWidth:500 }}><CardContent>
+      <Card ><CardContent>
         <TextField label="기본 언어" value={form.defaultLocale||''} onChange={(e) => setForm((p: any)=>({...p,defaultLocale:e.target.value}))} fullWidth sx={{mb:2}} />
         <FormControlLabel control={<Switch checked={form.international||false} onChange={(e) => setForm((p: any)=>({...p,international:e.target.checked}))} />} label="국제화 모드" sx={{mb:2, display:'block'}} />
         <TextField label="마지막 수주번호" type="number" value={form.lastOrderNumber||0} onChange={(e) => setForm((p: any)=>({...p,lastOrderNumber:+e.target.value}))} fullWidth sx={{mb:2}} />

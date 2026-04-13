@@ -34,8 +34,10 @@ const theme = createTheme({
     MuiTextField: { defaultProps: { size: 'small', fullWidth: true } },
     MuiSelect: { defaultProps: { size: 'small', fullWidth: true } },
     MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 8 } } },
-    MuiCard: { styleOverrides: { root: { borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' } } },
+    MuiCard: { styleOverrides: { root: { borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', width: '100%' } } },
+    MuiCardContent: { styleOverrides: { root: { padding: 24, '&:last-child': { paddingBottom: 24 } } } },
     MuiTableCell: { styleOverrides: { root: { padding: '12px 16px' } } },
+    MuiGrid: { styleOverrides: { root: {} }, defaultProps: {} },
   },
 });
 

@@ -22,7 +22,7 @@ export default function ModelForm({ initialValues, onSubmit, loading }: Props) {
         <Button variant="contained" onClick={() => onSubmit(form)} disabled={loading}>{isEdit ? '수정' : '등록'}</Button>
         <Button variant="outlined" onClick={() => navigate('/models')}>취소</Button>
       </StickyActions>
-      <Grid container spacing={2} sx={{ maxWidth: 700 }}>
+      <Grid container spacing={3} sx={{ width: "100%" }}>
         <Grid item xs={12} sm={6}><TextField label="모델명" value={form.name||''} onChange={set('name')} required /></Grid>
         <Grid item xs={12} sm={6}><TextField label="수주명" value={form.orderingName||''} onChange={set('orderingName')} /></Grid>
         <Grid item xs={12} sm={6}>

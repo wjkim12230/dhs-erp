@@ -22,7 +22,7 @@ export default function SpecificationCreatePage() {
         <Button variant="contained" onClick={() => mutation.mutate(form, { onSuccess: () => { enqueueSnackbar('등록됨',{variant:'success'}); navigate('/specifications'); } })}>등록</Button>
         <Button variant="outlined" onClick={() => navigate('/specifications')}>취소</Button>
       </StickyActions>
-      <Grid container spacing={2} sx={{ maxWidth:600 }}>
+      <Grid container spacing={3} sx={{ width: '100%' }}>
         <Grid item xs={6}><TextField label="사양명" value={form.name||''} onChange={set('name')} required /></Grid>
         <Grid item xs={6}><TextField label="우선순위" type="number" value={form.priority||''} onChange={set('priority')} /></Grid>
         <Grid item xs={12}><TextField select label="모델" value={form.modelId||''} onChange={set('modelId')} required>{models?.map(m => <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>)}</TextField></Grid>

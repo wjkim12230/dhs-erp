@@ -45,7 +45,7 @@ export default function OrderingUpdatePage() {
         <Button variant="contained" onClick={handleSubmit} disabled={mutation.isPending}>수정</Button>
         <Button variant="outlined" onClick={() => navigate('/orderings')}>취소</Button>
       </StickyActions>
-      <Grid container spacing={2} sx={{ maxWidth:800 }}>
+      <Grid container spacing={3} sx={{ width: '100%' }}>
         <Grid item xs={12} sm={4}><TextField label="고객명" value={form.customerName||''} onChange={set('customerName')} required /></Grid>
         <Grid item xs={12} sm={4}><TextField label="수주번호" value={form.orderNumber||''} disabled /></Grid>
         <Grid item xs={12} sm={4}><TextField label="현장명" value={form.siteName||''} onChange={set('siteName')} /></Grid>

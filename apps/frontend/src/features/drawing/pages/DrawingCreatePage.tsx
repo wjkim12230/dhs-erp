@@ -22,7 +22,7 @@ export default function DrawingCreatePage() {
         <Button variant="contained" onClick={() => mutation.mutate(form, { onSuccess: () => { enqueueSnackbar('등록됨',{variant:'success'}); navigate('/drawings'); } })}>등록</Button>
         <Button variant="outlined" onClick={() => navigate('/drawings')}>취소</Button>
       </StickyActions>
-      <Grid container spacing={2} sx={{ maxWidth:600 }}>
+      <Grid container spacing={3} sx={{ width: '100%' }}>
         <Grid item xs={12}><ImageUpload value={form.imageUrl} onChange={(url) => setForm((p: any) => ({...p, imageUrl: url}))} /></Grid>
         <Grid item xs={6}><TextField label="길이수" type="number" value={form.lengthCount||''} onChange={(e) => setForm((p: any) => ({...p, lengthCount: +e.target.value}))} /></Grid>
         <Grid item xs={6}><TextField select label="모델" value={form.modelId||''} onChange={(e) => setForm((p: any) => ({...p, modelId: +e.target.value}))} required>{models?.map(m => <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>)}</TextField></Grid>

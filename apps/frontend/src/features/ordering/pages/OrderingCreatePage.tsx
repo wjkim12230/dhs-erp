@@ -42,7 +42,7 @@ export default function OrderingCreatePage() {
 
       {store.currentStep === 0 && (
         <Box>
-          <Grid container spacing={2} sx={{ maxWidth:800 }}>
+          <Grid container spacing={3} sx={{ width: '100%' }}>
             <Grid item xs={12} sm={4}><TextField label="고객명" value={form.customerName||''} onChange={set('customerName')} required /></Grid>
             <Grid item xs={12} sm={4}><TextField label="수주번호" value={form.orderNumber||''} onChange={set('orderNumber')} required /></Grid>
             <Grid item xs={12} sm={4}><TextField label="현장명" value={form.siteName||''} onChange={set('siteName')} /></Grid>
@@ -113,7 +113,7 @@ export default function OrderingCreatePage() {
       {store.currentStep === 4 && (
         <Box>
           <Typography variant="subtitle1" sx={{mb:2}}>담당자 배정</Typography>
-          <Grid container spacing={2} sx={{ maxWidth:800 }}>
+          <Grid container spacing={3} sx={{ width: '100%' }}>
             <Grid item xs={12} sm={6}><EmployeeSelect label="수주 담당자" value={form.orderEmployeeId} onChange={(v) => setForm((p: any)=>({...p,orderEmployeeId:v}))} /></Grid>
             <Grid item xs={12} sm={6}><EmployeeSelect label="접수 담당자" value={form.receiptEmployeeId} onChange={(v) => setForm((p: any)=>({...p,receiptEmployeeId:v}))} /></Grid>
             <Grid item xs={12} sm={6}><EmployeeSelect label="포장 담당자" value={form.packagingEmployeeId} onChange={(v) => setForm((p: any)=>({...p,packagingEmployeeId:v}))} /></Grid>

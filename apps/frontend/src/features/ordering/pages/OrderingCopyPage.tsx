@@ -38,7 +38,7 @@ export default function OrderingCopyPage() {
         <Button variant="contained" onClick={() => mutation.mutate({...form, modelId:data?.data?.modelId, orderDate:orderDate?.format('YYYY-MM-DD'), dueDate:dueDate?.format('YYYY-MM-DD'), expectedDeliveryDate:expDate?.format('YYYY-MM-DD')}, { onSuccess: () => { enqueueSnackbar('복사 등록됨',{variant:'success'}); navigate('/orderings'); } })} disabled={mutation.isPending}>복사 등록</Button>
         <Button variant="outlined" onClick={() => navigate('/orderings')}>취소</Button>
       </StickyActions>
-      <Grid container spacing={2} sx={{ maxWidth:800 }}>
+      <Grid container spacing={3} sx={{ width: '100%' }}>
         <Grid item xs={12} sm={4}><TextField label="고객명" value={form.customerName||''} onChange={set('customerName')} required /></Grid>
         <Grid item xs={12} sm={4}><TextField label="수주번호" value={form.orderNumber||''} onChange={set('orderNumber')} required placeholder="새 수주번호" /></Grid>
         <Grid item xs={12} sm={4}><TextField label="현장명" value={form.siteName||''} onChange={set('siteName')} /></Grid>
