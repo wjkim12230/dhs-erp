@@ -8,3 +8,4 @@ build/
 .DS_Store
 legacy/
 apps/backend/.env
+.vercel
