@@ -23,7 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         locale={koKR}
         theme={{
           token: {
-            colorPrimary: '#1677ff',
+            colorPrimary: '#005BAC',
             borderRadius: 6,
           },
         }}

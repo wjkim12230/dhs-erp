@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Input, InputNumber, Select, Button, Space, Row, Col } from 'antd';
+import { Card, Form, Input, InputNumber, Select, Button, Row, Col } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import { useCreateSpecification } from '../hooks/useSpecifications';
+import StickyActions from '@/components/common/StickyActions';
 import type { Model, SpecificationCreateDto } from '@dhs/shared';
 
 export default function SpecificationCreatePage() {
@@ -17,6 +18,10 @@ export default function SpecificationCreatePage() {
 
   return (
     <Card title="사양 등록">
+      <StickyActions>
+        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>등록</Button>
+        <Button onClick={() => navigate('/specifications')}>취소</Button>
+      </StickyActions>
       <Form form={form} layout="vertical" style={{ maxWidth: 600 }}
         onFinish={(v: SpecificationCreateDto) => mutation.mutate(v, { onSuccess: () => navigate('/specifications') })}>
         <Row gutter={16}>
@@ -26,7 +31,6 @@ export default function SpecificationCreatePage() {
         <Form.Item name="modelId" label="모델" rules={[{ required: true }]}>
           <Select options={models?.map((m) => ({ label: m.name, value: m.id }))} placeholder="모델 선택" />
         </Form.Item>
-        <Form.Item><Space><Button type="primary" htmlType="submit" loading={mutation.isPending}>등록</Button><Button onClick={() => navigate('/specifications')}>취소</Button></Space></Form.Item>
       </Form>
     </Card>
   );

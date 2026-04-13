@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Card, Form, InputNumber, Button, Space, Row, Col } from 'antd';
+import { Spin, Card, Form, InputNumber, Button, Row, Col } from 'antd';
 import { useDrawing, useUpdateDrawing } from '../hooks/useDrawings';
 import ImageUpload from '@/components/common/ImageUpload';
+import StickyActions from '@/components/common/StickyActions';
 
 export default function DrawingUpdatePage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,10 @@ export default function DrawingUpdatePage() {
 
   return (
     <Card title="도면 수정">
+      <StickyActions>
+        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>수정</Button>
+        <Button onClick={() => navigate('/drawings')}>취소</Button>
+      </StickyActions>
       <Form form={form} layout="vertical" initialValues={drawing} style={{ maxWidth: 600 }}
         onFinish={(v) => mutation.mutate({ id: drawing.id, data: { ...v, version: drawing.version } }, { onSuccess: () => navigate('/drawings') })}>
         <Form.Item name="imageUrl" label="도면 이미지" rules={[{ required: true, message: '이미지를 업로드해주세요' }]}>
@@ -23,7 +28,6 @@ export default function DrawingUpdatePage() {
         <Row gutter={16}>
           <Col span={12}><Form.Item name="lengthCount" label="길이수"><InputNumber style={{ width: '100%' }} /></Form.Item></Col>
         </Row>
-        <Form.Item><Space><Button type="primary" htmlType="submit" loading={mutation.isPending}>수정</Button><Button onClick={() => navigate('/drawings')}>취소</Button></Space></Form.Item>
       </Form>
     </Card>
   );

@@ -16,7 +16,11 @@ const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
 
-export default function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+export default function Sidebar({ onNavigate }: SidebarProps = {}) {
   const collapsed = useSidebarStore((s) => s.collapsed);
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
   const hasRole = useAuthStore((s) => s.hasRole);
@@ -77,7 +81,7 @@ export default function Sidebar() {
       collapsible
       collapsed={collapsed}
       onCollapse={setCollapsed}
-      style={{ minHeight: '100vh' }}
+      style={{ minHeight: '100vh', background: '#001529' }}
       theme="dark"
     >
       <div
@@ -86,13 +90,20 @@ export default function Sidebar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#fff',
-          fontSize: collapsed ? 16 : 20,
-          fontWeight: 700,
+          padding: collapsed ? '12px 8px' : '12px 16px',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
+          cursor: 'pointer',
         }}
+        onClick={() => navigate('/dashboard')}
       >
-        {collapsed ? 'DHS' : 'DHS ERP'}
+        <img
+          src="/logo.png"
+          alt="DHS"
+          style={{ height: 32, objectFit: 'contain' }}
+        />
+        {!collapsed && (
+          <span style={{ color: '#fff', fontSize: 14, fontWeight: 600, marginLeft: 8, opacity: 0.85 }}>ERP</span>
+        )}
       </div>
       <Menu
         theme="dark"
@@ -100,7 +111,7 @@ export default function Sidebar() {
         selectedKeys={[selectedKey]}
         defaultOpenKeys={openKeys}
         items={menuItems}
-        onClick={({ key }) => navigate(key)}
+        onClick={({ key }) => { navigate(key); onNavigate?.(); }}
       />
     </Sider>
   );

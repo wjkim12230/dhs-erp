@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Card, Form, Input, DatePicker, Row, Col, Button, Space, message } from 'antd';
+import { Spin, Card, Form, Input, DatePicker, Row, Col, Button } from 'antd';
 import dayjs from 'dayjs';
 import { useOrdering, useCreateOrdering } from '../hooks/useOrderings';
-import EmployeeSelect from '@/components/common/EmployeeSelect';
+import StickyActions from '@/components/common/StickyActions';
 
 export default function OrderingCopyPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +17,7 @@ export default function OrderingCopyPage() {
 
   const initial = {
     ...ordering,
-    orderNumber: '', // 새 수주번호 필요
+    orderNumber: '',
     orderDate: ordering.orderDate ? dayjs(ordering.orderDate) : undefined,
     dueDate: ordering.dueDate ? dayjs(ordering.dueDate) : undefined,
     expectedDeliveryDate: ordering.expectedDeliveryDate ? dayjs(ordering.expectedDeliveryDate) : undefined,
@@ -35,6 +35,10 @@ export default function OrderingCopyPage() {
 
   return (
     <Card title="수주 복사">
+      <StickyActions>
+        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>복사 등록</Button>
+        <Button onClick={() => navigate('/orderings')}>취소</Button>
+      </StickyActions>
       <Form form={form} layout="vertical" initialValues={initial} onFinish={handleFinish} style={{ maxWidth: 800 }}>
         <Row gutter={16}>
           <Col span={8}><Form.Item name="customerName" label="고객명" rules={[{ required: true }]}><Input /></Form.Item></Col>
@@ -52,12 +56,6 @@ export default function OrderingCopyPage() {
           <Col span={8}><Form.Item name="expectedDeliveryDate" label="출하예정일"><DatePicker style={{ width: '100%' }} /></Form.Item></Col>
         </Row>
         <Form.Item name="memo" label="메모"><Input.TextArea rows={2} /></Form.Item>
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={mutation.isPending}>복사 등록</Button>
-            <Button onClick={() => navigate('/orderings')}>취소</Button>
-          </Space>
-        </Form.Item>
       </Form>
     </Card>
   );

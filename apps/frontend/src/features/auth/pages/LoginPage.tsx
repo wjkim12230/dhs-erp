@@ -30,11 +30,10 @@ export default function LoginPage() {
         background: '#f0f2f5',
       }}
     >
-      <Card style={{ width: 400, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <Card style={{ width: '100%', maxWidth: 400, margin: '0 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Title level={2} style={{ marginBottom: 4 }}>
-            DHS ERP
-          </Title>
+          <img src="/logo.png" alt="DHS" style={{ height: 48, marginBottom: 12 }} />
+          <br />
           <Typography.Text type="secondary">관리자 로그인</Typography.Text>
         </div>
         <Form form={form} onFinish={handleSubmit} layout="vertical" size="large">

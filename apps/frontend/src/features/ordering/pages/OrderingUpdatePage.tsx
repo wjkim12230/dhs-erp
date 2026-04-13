@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Card, Form, Input, DatePicker, Row, Col, Button, Space } from 'antd';
+import { Spin, Card, Form, Input, DatePicker, Row, Col, Button } from 'antd';
 import dayjs from 'dayjs';
 import { useOrdering, useUpdateOrdering } from '../hooks/useOrderings';
 import EmployeeSelect from '@/components/common/EmployeeSelect';
+import StickyActions from '@/components/common/StickyActions';
 
 export default function OrderingUpdatePage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +38,10 @@ export default function OrderingUpdatePage() {
 
   return (
     <Card title="수주 수정">
+      <StickyActions>
+        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>수정</Button>
+        <Button onClick={() => navigate('/orderings')}>취소</Button>
+      </StickyActions>
       <Form form={form} layout="vertical" initialValues={initial} onFinish={handleFinish} style={{ maxWidth: 800 }}>
         <Row gutter={16}>
           <Col span={8}><Form.Item name="customerName" label="고객명" rules={[{ required: true }]}><Input /></Form.Item></Col>
@@ -60,12 +65,6 @@ export default function OrderingUpdatePage() {
           <Col span={6}><Form.Item name="shippingEmployeeId" label="출하담당"><EmployeeSelect /></Form.Item></Col>
         </Row>
         <Form.Item name="memo" label="메모"><Input.TextArea rows={2} /></Form.Item>
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={mutation.isPending}>수정</Button>
-            <Button onClick={() => navigate('/orderings')}>취소</Button>
-          </Space>
-        </Form.Item>
       </Form>
     </Card>
   );

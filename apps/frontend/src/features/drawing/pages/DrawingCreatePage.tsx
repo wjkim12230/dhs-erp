@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, InputNumber, Select, Button, Space, Row, Col } from 'antd';
+import { Card, Form, InputNumber, Select, Button, Row, Col } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/services/apiClient';
 import { useCreateDrawing } from '../hooks/useDrawings';
 import ImageUpload from '@/components/common/ImageUpload';
+import StickyActions from '@/components/common/StickyActions';
 import type { Model, DrawingCreateDto } from '@dhs/shared';
 
 export default function DrawingCreatePage() {
@@ -17,6 +18,10 @@ export default function DrawingCreatePage() {
 
   return (
     <Card title="도면 등록">
+      <StickyActions>
+        <Button type="primary" loading={mutation.isPending} onClick={() => form.submit()}>등록</Button>
+        <Button onClick={() => navigate('/drawings')}>취소</Button>
+      </StickyActions>
       <Form form={form} layout="vertical" style={{ maxWidth: 600 }}
         onFinish={(v: DrawingCreateDto) => mutation.mutate(v, { onSuccess: () => navigate('/drawings') })}>
         <Form.Item name="imageUrl" label="도면 이미지" rules={[{ required: true, message: '이미지를 업로드해주세요' }]}>
@@ -30,7 +35,6 @@ export default function DrawingCreatePage() {
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item><Space><Button type="primary" htmlType="submit" loading={mutation.isPending}>등록</Button><Button onClick={() => navigate('/drawings')}>취소</Button></Space></Form.Item>
       </Form>
     </Card>
   );

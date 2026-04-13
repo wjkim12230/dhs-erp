@@ -1,8 +1,9 @@
-import { Form, Input, Select, DatePicker, InputNumber, Row, Col, Button, Space, Card } from 'antd';
+import { Form, Input, Select, DatePicker, InputNumber, Row, Col, Button, Card } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { Employee, EmployeeCreateDto } from '@dhs/shared';
 import DaumAddressSearch from '@/components/common/DaumAddressSearch';
+import StickyActions from '@/components/common/StickyActions';
 import {
   Position,
   JobGroup,
@@ -49,6 +50,12 @@ export default function EmployeeForm({ initialValues, onSubmit, loading }: Emplo
 
   return (
     <Card title={isEdit ? '직원 수정' : '직원 등록'}>
+      <StickyActions>
+        <Button type="primary" loading={loading} onClick={() => form.submit()}>
+          {isEdit ? '수정' : '등록'}
+        </Button>
+        <Button onClick={() => navigate('/employees')}>취소</Button>
+      </StickyActions>
       <Form
         form={form}
         layout="vertical"
@@ -145,14 +152,6 @@ export default function EmployeeForm({ initialValues, onSubmit, loading }: Emplo
           <Input.TextArea rows={3} />
         </Form.Item>
 
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              {isEdit ? '수정' : '등록'}
-            </Button>
-            <Button onClick={() => navigate('/employees')}>취소</Button>
-          </Space>
-        </Form.Item>
       </Form>
     </Card>
   );
