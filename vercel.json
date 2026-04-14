@@ -1,6 +1,5 @@
 {
-  "framework": "vite",
-  "buildCommand": "npm run build --workspace=@dhs/frontend",
+  "buildCommand": "cd apps/frontend && npx vite build",
   "installCommand": "npm install",
   "outputDirectory": "apps/frontend/dist",
   "rewrites": [
