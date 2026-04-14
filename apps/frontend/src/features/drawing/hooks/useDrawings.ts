@@ -11,15 +11,15 @@ export function useDrawing(id: number) {
 export function useCreateDrawing() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (d: DrawingCreateDto) => drawingApi.create(d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['drawings'] }); message.success('도면이 등록되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['drawings'] }); } });
 }
 export function useUpdateDrawing() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: ({ id, data }: { id: number; data: Partial<DrawingCreateDto> & { version: number } }) => drawingApi.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['drawings'] }); message.success('수정되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['drawings'] }); } });
 }
 export function useDeleteDrawing() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (id: number) => drawingApi.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['drawings'] }); message.success('삭제되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['drawings'] }); } });
 }

@@ -18,42 +18,42 @@ export function useModelDetails(modelId: number) {
 export function useCreateModelGroup() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (d: ModelGroupCreateDto) => modelApi.createGroup(d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-groups'] }); message.success('모델그룹이 등록되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-groups'] }); } });
 }
 export function useUpdateModelGroup() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: ({ id, data }: { id: number; data: Partial<ModelGroupCreateDto> & { version: number } }) => modelApi.updateGroup(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-groups'] }); message.success('수정되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-groups'] }); } });
 }
 export function useDeleteModelGroup() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (id: number) => modelApi.deleteGroup(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-groups'] }); message.success('삭제되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-groups'] }); } });
 }
 
 export function useCreateModel() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (d: ModelCreateDto) => modelApi.create(d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['models'] }); message.success('모델이 등록되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['models'] }); } });
 }
 export function useUpdateModel() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: ({ id, data }: { id: number; data: Partial<ModelCreateDto> & { version: number } }) => modelApi.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['models'] }); message.success('수정되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['models'] }); } });
 }
 export function useDeleteModel() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (id: number) => modelApi.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['models'] }); message.success('삭제되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['models'] }); } });
 }
 
 export function useCreateModelDetail(modelId: number) {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (d: { name: string; priority?: number }) => modelApi.createDetail(modelId, d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-details', modelId] }); message.success('등록되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-details', modelId] }); } });
 }
 export function useDeleteModelDetail(modelId: number) {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (detailId: number) => modelApi.deleteDetail(modelId, detailId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-details', modelId] }); message.success('삭제되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['model-details', modelId] }); } });
 }

@@ -11,20 +11,20 @@ export function useSpecificationDetails(specId: number) {
 export function useCreateSpecification() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (d: SpecificationCreateDto) => specificationApi.create(d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specifications'] }); message.success('사양이 등록되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specifications'] }); } });
 }
 export function useDeleteSpecification() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (id: number) => specificationApi.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specifications'] }); message.success('삭제되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specifications'] }); } });
 }
 export function useCreateSpecDetail(specId: number) {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (d: SpecificationDetailCreateDto) => specificationApi.createDetail(specId, d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specification-details', specId] }); message.success('등록되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specification-details', specId] }); } });
 }
 export function useDeleteSpecDetail(specId: number) {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (detailId: number) => specificationApi.deleteDetail(specId, detailId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specification-details', specId] }); message.success('삭제되었습니다.'); } });
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['specification-details', specId] }); } });
 }
