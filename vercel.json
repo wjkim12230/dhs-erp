@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd apps/frontend && npx vite build",
+  "buildCommand": "npm run build:frontend",
   "installCommand": "npm install",
   "outputDirectory": "apps/frontend/dist",
   "rewrites": [
