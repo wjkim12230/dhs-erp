@@ -1,17 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { CircularProgress, Box } from '@mui/material';
-import { useSnackbar } from 'notistack';
+import { Spinner } from '@heroui/react';
+import toast from 'react-hot-toast';
 import ModelForm from '../components/ModelForm';
 import { useModel, useUpdateModel } from '../hooks/useModels';
 
 export default function ModelUpdatePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
   const { data, isLoading } = useModel(Number(id));
   const mutation = useUpdateModel();
-  if (isLoading) return <Box sx={{ display:'flex', justifyContent:'center', py:10 }}><CircularProgress /></Box>;
+  if (isLoading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
   const model = data?.data;
   if (!model) return null;
-  return <ModelForm initialValues={model} onSubmit={(v) => mutation.mutate({ id: model.id, data: {...v, version: model.version} }, { onSuccess: () => { enqueueSnackbar('수정됨', {variant:'success'}); navigate('/models'); } })} loading={mutation.isPending} />;
+  return <ModelForm initialValues={model} onSubmit={(v) => mutation.mutate({ id: model.id, data: {...v, version: model.version} }, { onSuccess: () => { toast.success('수정됨'); navigate('/models'); } })} loading={mutation.isPending} />;
 }

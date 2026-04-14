@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { Box, Card, CardContent, TextField, Button, Typography } from '@mui/material';
+import { Card, CardBody, Input, Button } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
-import { useSnackbar } from 'notistack';
+import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,32 +14,26 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      await login(loginId, password);
-      enqueueSnackbar('로그인 성공', { variant: 'success' });
-      navigate('/dashboard');
-    } catch {
-      enqueueSnackbar('아이디 또는 비밀번호가 올바르지 않습니다.', { variant: 'error' });
-    } finally { setLoading(false); }
+    try { await login(loginId, password); toast.success('로그인 성공'); navigate('/dashboard'); }
+    catch { toast.error('아이디 또는 비밀번호가 올바르지 않습니다.'); }
+    finally { setLoading(false); }
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
-      <Card sx={{ width: '100%', maxWidth: 400, mx: 2 }}>
-        <CardContent sx={{ p: 4 }}>
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <img src="/logo.png" alt="DHS" style={{ height: 48, marginBottom: 12 }} />
-            <Typography variant="body2" color="text.secondary">관리자 로그인</Typography>
-          </Box>
-          <form onSubmit={handleSubmit}>
-            <TextField label="아이디" value={loginId} onChange={(e) => setLoginId(e.target.value)} required fullWidth sx={{ mb: 2 }} />
-            <TextField label="비밀번호" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required fullWidth sx={{ mb: 3 }} />
-            <Button type="submit" variant="contained" fullWidth size="large" disabled={loading}>
-              {loading ? '로그인 중...' : '로그인'}
-            </Button>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <Card className="w-full max-w-md">
+        <CardBody className="p-8">
+          <div className="text-center mb-8">
+            <img src="/logo.png" alt="DHS" className="h-12 mx-auto mb-3" />
+            <p className="text-sm text-gray-500">관리자 로그인</p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input label="아이디" value={loginId} onValueChange={setLoginId} isRequired size="lg" />
+            <Input label="비밀번호" type="password" value={password} onValueChange={setPassword} isRequired size="lg" />
+            <Button type="submit" color="primary" className="w-full" size="lg" isLoading={loading}>로그인</Button>
           </form>
-        </CardContent>
+        </CardBody>
       </Card>
-    </Box>
+    </div>
   );
 }

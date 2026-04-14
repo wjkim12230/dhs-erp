@@ -1,57 +1,38 @@
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Avatar, Box, Divider } from '@mui/material';
-import { Menu as MenuIcon, Logout, Person } from '@mui/icons-material';
-import { useState } from 'react';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar, Button } from '@heroui/react';
+import { Menu, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
 import { ROLE_LABELS } from '@dhs/shared';
 
-interface TopNavbarProps {
-  isMobile?: boolean;
-  onMenuClick?: () => void;
-}
+interface Props { isMobile?: boolean; collapsed?: boolean; onMenuClick?: () => void; }
 
-export default function TopNavbar({ isMobile, onMenuClick }: TopNavbarProps) {
+export default function TopNavbar({ isMobile, onMenuClick }: Props) {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleLogout = () => {
-    setAnchorEl(null);
-    logout();
-    navigate('/login');
-  };
 
   return (
-    <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: '1px solid #e0e0e0' }}>
-      <Toolbar>
-        {isMobile && (
-          <IconButton edge="start" onClick={onMenuClick} sx={{ mr: 1 }}>
-            <MenuIcon />
-          </IconButton>
-        )}
-        <Box sx={{ flex: 1 }} />
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={(e) => setAnchorEl(e.currentTarget)}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: 14 }}>
-            {user?.name?.[0] || <Person />}
-          </Avatar>
-          {!isMobile && (
-            <Typography variant="body2" sx={{ ml: 1, fontWeight: 500 }}>{user?.name}</Typography>
-          )}
-        </Box>
-        <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)} transformOrigin={{ horizontal: 'right', vertical: 'top' }} anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
-          <MenuItem disabled>
-            <Box>
-              <Typography variant="body2" fontWeight={600}>{user?.name}</Typography>
-              <Typography variant="caption" color="text.secondary">{user?.role ? ROLE_LABELS[user.role] : ''}</Typography>
-            </Box>
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout}>
-            <Logout fontSize="small" sx={{ mr: 1 }} /> 로그아웃
-          </MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-30">
+      <div>
+        <Button isIconOnly variant="light" size="sm" onPress={onMenuClick}><Menu size={20} /></Button>
+      </div>
+      <Dropdown placement="bottom-end">
+        <DropdownTrigger>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <Avatar name={user?.name?.[0]} size="sm" className="bg-brand text-white" />
+            {!isMobile && <span className="text-sm font-medium">{user?.name}</span>}
+          </div>
+        </DropdownTrigger>
+        <DropdownMenu aria-label="User menu">
+          <DropdownItem key="info" className="opacity-100" isReadOnly>
+            <p className="font-semibold">{user?.name}</p>
+            <p className="text-xs text-gray-500">{user?.role ? ROLE_LABELS[user.role] : ''}</p>
+          </DropdownItem>
+          <DropdownItem key="logout" startContent={<LogOut size={14} />} onPress={() => { logout(); navigate('/login'); }}>
+            로그아웃
+          </DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
+    </header>
   );
 }

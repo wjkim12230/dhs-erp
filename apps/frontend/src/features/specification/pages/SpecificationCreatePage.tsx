@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Card, CardContent, TextField, Button, Grid, Typography, MenuItem } from '@mui/material';
+import { Card, CardBody, Input, Select, SelectItem, Button } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import toast from 'react-hot-toast';
 import apiClient from '@/services/apiClient';
 import { useCreateSpecification } from '../hooks/useSpecifications';
 import StickyActions from '@/components/common/StickyActions';
@@ -10,23 +10,25 @@ import type { Model } from '@dhs/shared';
 
 export default function SpecificationCreatePage() {
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
   const mutation = useCreateSpecification();
   const [form, setForm] = useState<any>({});
-  const { data: models } = useQuery({ queryKey: ['models','select'], queryFn: async () => { const r = await apiClient.get('/models?limit=200'); return r.data.data as Model[]; } });
-  const set = (f: string) => (e: any) => setForm((p: any) => ({...p, [f]: e?.target ? e.target.value : e}));
+  const { data: models } = useQuery({ queryKey: ['models','s'], queryFn: async () => { const r = await apiClient.get('/models?limit=200'); return r.data.data as Model[]; } });
   return (
-    <Card><CardContent>
-      <Typography variant="h6" sx={{ mb:1 }}>사양 등록</Typography>
+    <Card className="w-full"><CardBody className="p-6">
+      <h2 className="text-xl font-bold mb-2">사양 등록</h2>
       <StickyActions>
-        <Button variant="contained" onClick={() => mutation.mutate(form, { onSuccess: () => { enqueueSnackbar('등록됨',{variant:'success'}); navigate('/specifications'); } })}>등록</Button>
-        <Button variant="outlined" onClick={() => navigate('/specifications')}>취소</Button>
+        <Button color="primary" onPress={() => mutation.mutate(form, { onSuccess: () => { toast.success('등록됨'); navigate('/specifications'); } })}>등록</Button>
+        <Button variant="bordered" onPress={() => navigate('/specifications')}>취소</Button>
       </StickyActions>
-      <Grid container spacing={3} sx={{ width: '100%' }}>
-        <Grid item xs={6}><TextField label="사양명" value={form.name||''} onChange={set('name')} required /></Grid>
-        <Grid item xs={6}><TextField label="우선순위" type="number" value={form.priority||''} onChange={set('priority')} /></Grid>
-        <Grid item xs={12}><TextField select label="모델" value={form.modelId||''} onChange={set('modelId')} required>{models?.map(m => <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>)}</TextField></Grid>
-      </Grid>
-    </CardContent></Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+        <Input label="사양명" size="sm" value={form.name||''} onValueChange={(v) => setForm((p: any)=>({...p,name:v}))} isRequired />
+        <Input label="우선순위" size="sm" type="number" value={form.priority?.toString()||''} onValueChange={(v) => setForm((p: any)=>({...p,priority:+v}))} />
+        <div className="sm:col-span-2">
+          <Select label="모델" size="sm" selectedKeys={form.modelId ? [form.modelId.toString()] : []} onSelectionChange={(k) => setForm((p: any)=>({...p,modelId:+[...k][0]}))} isRequired>
+            {(models??[]).map(m => <SelectItem key={m.id.toString()}>{m.name}</SelectItem>)}
+          </Select>
+        </div>
+      </div>
+    </CardBody></Card>
   );
 }

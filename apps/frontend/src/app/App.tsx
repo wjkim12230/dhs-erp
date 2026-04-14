@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-import { CircularProgress, Box } from '@mui/material';
+import { Spinner } from '@heroui/react';
 import AuthGuard from '@/components/guard/AuthGuard';
 import RoleGuard from '@/components/guard/RoleGuard';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -51,7 +51,7 @@ const AdminListPage = lazy(() => import('@/features/admin-user/pages/AdminListPa
 // Settings
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
 
-const Loading = () => <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}><CircularProgress /></Box>;
+const Loading = () => <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
 export default function App() {
   return (

@@ -1,48 +1,48 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Button, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
-import { Add, Delete } from '@mui/icons-material';
-import { GridColDef } from '@mui/x-data-grid';
-import { useSnackbar } from 'notistack';
+import { Button, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, useDisclosure } from '@heroui/react';
+import { Plus, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useModelDetails, useCreateModelDetail, useDeleteModelDetail } from '../hooks/useModels';
 import DataTable from '@/components/common/DataTable';
 
 export default function ModelDetailListPage() {
   const { modelId } = useParams<{ modelId: string }>();
   const mid = Number(modelId);
-  const { enqueueSnackbar } = useSnackbar();
   const { data, isLoading } = useModelDetails(mid);
   const createMut = useCreateModelDetail(mid);
   const deleteMut = useDeleteModelDetail(mid);
-  const [open, setOpen] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [form, setForm] = useState({ name: '', priority: 0 });
 
-  const columns: GridColDef[] = [
-    { field: 'name', headerName: '상세항목명', flex: 1 },
-    { field: 'priority', headerName: '우선순위', width: 100 },
-    { field: 'actions', headerName: '', width: 60, sortable: false, renderCell: (p: any) => (
-      <IconButton size="small" color="error" onClick={() => { if(confirm('삭제?')) deleteMut.mutate(p.row.id, { onSuccess: () => enqueueSnackbar('삭제됨', {variant:'success'}) }); }}><Delete fontSize="small" /></IconButton>
+  const columns = [
+    { key: 'name', label: '상세항목명' },
+    { key: 'priority', label: '우선순위', width: 100 },
+    { key: 'actions', label: '', width: 60, render: (_: any, r: any) => (
+      <Tooltip content="삭제"><Button isIconOnly size="sm" variant="light" color="danger" onPress={() => { if(confirm('삭제?')) deleteMut.mutate(r.id, { onSuccess: () => toast.success('삭제됨') }); }}><Trash2 size={14} /></Button></Tooltip>
     )},
   ];
 
   return (
-    <Box>
-      <Box sx={{ display:'flex', justifyContent:'space-between', alignItems:'center', mb:2 }}>
-        <Typography variant="h5" fontWeight={700}>모델 상세항목</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => { setForm({name:'',priority:0}); setOpen(true); }}>추가</Button>
-      </Box>
-      <DataTable columns={columns} rows={data?.data??[]} total={data?.data?.length??0} page={0} pageSize={100} loading={isLoading} />
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>상세항목 추가</DialogTitle>
-        <DialogContent sx={{ pt:'16px !important' }}>
-          <TextField label="항목명" value={form.name} onChange={(e) => setForm(p=>({...p,name:e.target.value}))} fullWidth sx={{mb:2}} />
-          <TextField label="우선순위" type="number" value={form.priority} onChange={(e) => setForm(p=>({...p,priority:+e.target.value}))} fullWidth />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>취소</Button>
-          <Button variant="contained" onClick={() => createMut.mutate(form, { onSuccess: () => { setOpen(false); setForm({name:'',priority:0}); enqueueSnackbar('등록됨', {variant:'success'}); } })}>저장</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">모델 상세항목</h1>
+        <Button color="primary" startContent={<Plus size={16} />} onPress={() => { setForm({ name: '', priority: 0 }); onOpen(); }}>추가</Button>
+      </div>
+      <DataTable columns={columns} rows={data?.data??[]} total={data?.data?.length??0} page={1} pageSize={100} loading={isLoading} />
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalContent>
+          <ModalHeader>상세항목 추가</ModalHeader>
+          <ModalBody>
+            <Input label="항목명" size="sm" value={form.name} onValueChange={(v) => setForm(p => ({...p, name: v}))} />
+            <Input label="우선순위" size="sm" type="number" value={form.priority.toString()} onValueChange={(v) => setForm(p => ({...p, priority: +v}))} />
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="bordered" onPress={onClose}>취소</Button>
+            <Button color="primary" onPress={() => createMut.mutate(form, { onSuccess: () => { onClose(); toast.success('등록됨'); } })}>저장</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </div>
   );
 }

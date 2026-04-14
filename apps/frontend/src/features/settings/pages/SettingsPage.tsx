@@ -1,29 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Box, Card, CardContent, TextField, Button, Typography, Switch, FormControlLabel, CircularProgress } from '@mui/material';
+import { Card, CardBody, Input, Button, Switch } from '@heroui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSnackbar } from 'notistack';
+import toast from 'react-hot-toast';
 import apiClient from '@/services/apiClient';
 import type { AppSettings } from '@dhs/shared';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
   const { data, isLoading } = useQuery({ queryKey: ['settings'], queryFn: async () => { const r = await apiClient.get('/settings'); return r.data.data as AppSettings; } });
-  const mutation = useMutation({ mutationFn: async (v: Partial<AppSettings>) => { await apiClient.patch('/settings', v); }, onSuccess: () => { qc.invalidateQueries({queryKey:['settings']}); enqueueSnackbar('저장됨',{variant:'success'}); } });
+  const mutation = useMutation({ mutationFn: async (v: Partial<AppSettings>) => { await apiClient.patch('/settings', v); }, onSuccess: () => { qc.invalidateQueries({queryKey:['settings']}); toast.success('저장됨'); } });
   const [form, setForm] = useState<any>({});
   useEffect(() => { if (data) setForm(data); }, [data]);
 
-  if (isLoading) return <Box sx={{ display:'flex', justifyContent:'center', py:10 }}><CircularProgress /></Box>;
+  if (isLoading) return null;
 
   return (
-    <Box>
-      <Typography variant="h5" fontWeight={700} sx={{ mb:3 }}>앱 설정</Typography>
-      <Card ><CardContent>
-        <TextField label="기본 언어" value={form.defaultLocale||''} onChange={(e) => setForm((p: any)=>({...p,defaultLocale:e.target.value}))} fullWidth sx={{mb:2}} />
-        <FormControlLabel control={<Switch checked={form.international||false} onChange={(e) => setForm((p: any)=>({...p,international:e.target.checked}))} />} label="국제화 모드" sx={{mb:2, display:'block'}} />
-        <TextField label="마지막 수주번호" type="number" value={form.lastOrderNumber||0} onChange={(e) => setForm((p: any)=>({...p,lastOrderNumber:+e.target.value}))} fullWidth sx={{mb:2}} />
-        <Button variant="contained" onClick={() => mutation.mutate(form)} disabled={mutation.isPending}>저장</Button>
-      </CardContent></Card>
-    </Box>
+    <div>
+      <h1 className="text-2xl font-bold mb-6">앱 설정</h1>
+      <Card className="w-full"><CardBody className="p-6 space-y-4">
+        <Input label="기본 언어" size="sm" value={form.defaultLocale||''} onValueChange={(v) => setForm((p: any)=>({...p,defaultLocale:v}))} />
+        <Switch isSelected={form.international||false} onValueChange={(v) => setForm((p: any)=>({...p,international:v}))}>국제화 모드</Switch>
+        <Input label="마지막 수주번호" size="sm" type="number" value={form.lastOrderNumber?.toString()||'0'} onValueChange={(v) => setForm((p: any)=>({...p,lastOrderNumber:+v}))} />
+        <Button color="primary" isLoading={mutation.isPending} onPress={() => mutation.mutate(form)}>저장</Button>
+      </CardBody></Card>
+    </div>
   );
 }

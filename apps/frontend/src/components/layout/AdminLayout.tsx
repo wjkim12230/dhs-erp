@@ -1,21 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Box, Drawer } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
 import { useSidebarStore } from '@/stores/sidebarStore';
 
-const SIDEBAR_WIDTH = 240;
-const SIDEBAR_COLLAPSED = 64;
-
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
-  return isMobile;
+  const [m, setM] = useState(window.innerWidth < 768);
+  useEffect(() => { const h = () => setM(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
+  return m;
 }
 
 export default function AdminLayout() {
@@ -23,37 +15,25 @@ export default function AdminLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const collapsed = useSidebarStore((s) => s.collapsed);
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
-
-  useEffect(() => {
-    if (isMobile) setCollapsed(true);
-  }, [isMobile]);
-
-  const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
+  useEffect(() => { if (isMobile) setCollapsed(true); }, [isMobile]);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {isMobile ? (
-        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} PaperProps={{ sx: { width: SIDEBAR_WIDTH } }}>
-          <Sidebar onNavigate={() => setDrawerOpen(false)} />
-        </Drawer>
-      ) : (
-        <Box sx={{ width: sidebarWidth, flexShrink: 0, bgcolor: '#fff', borderRight: '1px solid #e0e0e0', transition: 'width 0.2s' }}>
-          <Sidebar collapsed={collapsed} />
-        </Box>
-      )}
-
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopNavbar isMobile={isMobile} onMenuClick={() => setDrawerOpen(true)} />
-        <Box
-          component="main"
-          sx={{
-            flex: 1, p: isMobile ? 1.5 : 3,
-            bgcolor: '#f5f5f5', overflow: 'auto',
-          }}
-        >
+    <div className="flex min-h-screen">
+      {isMobile && drawerOpen && <div className="fixed inset-0 z-40 bg-black/50" onClick={() => setDrawerOpen(false)} />}
+      <aside className={`
+        ${isMobile ? 'fixed z-50 h-full transition-transform' : 'relative shrink-0'}
+        ${isMobile && !drawerOpen ? '-translate-x-full' : 'translate-x-0'}
+        ${collapsed && !isMobile ? 'w-16' : 'w-60'}
+        bg-white border-r border-gray-200 transition-all duration-200
+      `}>
+        <Sidebar collapsed={collapsed && !isMobile} onNavigate={() => isMobile && setDrawerOpen(false)} />
+      </aside>
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopNavbar isMobile={isMobile} collapsed={collapsed} onMenuClick={() => isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed)} />
+        <main className={`flex-1 ${isMobile ? 'p-3' : 'p-6'} bg-gray-50 overflow-auto`}>
           <Outlet />
-        </Box>
-      </Box>
-    </Box>
+        </main>
+      </div>
+    </div>
   );
 }

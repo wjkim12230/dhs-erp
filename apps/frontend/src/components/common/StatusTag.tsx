@@ -1,12 +1,12 @@
-import { Chip } from '@mui/material';
+import { Chip } from '@heroui/react';
 import { OrderStatus, ORDER_STATUS_LABELS } from '@dhs/shared';
 
-const STATUS_COLORS: Record<OrderStatus, 'info' | 'success' | 'default'> = {
-  [OrderStatus.ACTIVE]: 'info',
+const colors: Record<OrderStatus, 'primary' | 'success' | 'default'> = {
+  [OrderStatus.ACTIVE]: 'primary',
   [OrderStatus.COMPLETED]: 'success',
   [OrderStatus.DELETED]: 'default',
 };
 
 export default function StatusTag({ status }: { status: OrderStatus }) {
-  return <Chip label={ORDER_STATUS_LABELS[status]} color={STATUS_COLORS[status]} size="small" />;
+  return <Chip size="sm" color={colors[status]} variant="flat">{ORDER_STATUS_LABELS[status]}</Chip>;
 }

@@ -1,10 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { TextField, Button, Stack } from '@mui/material';
-import { Search } from '@mui/icons-material';
+import { Input, Button } from '@heroui/react';
+import { Search } from 'lucide-react';
 
-declare global {
-  interface Window { daum: any; }
-}
+declare global { interface Window { daum: any; } }
 
 interface Props { value?: string; onChange?: (v: string) => void; }
 
@@ -26,8 +24,8 @@ export default function DaumAddressSearch({ value, onChange }: Props) {
         let extra = '';
         if (data.addressType === 'R') {
           if (data.bname) extra += data.bname;
-          if (data.buildingName) extra += extra ? `, ${data.buildingName}` : data.buildingName;
-          addr += extra ? ` (${extra})` : '';
+          if (data.buildingName) extra += extra ? ', ' + data.buildingName : data.buildingName;
+          addr += extra ? ' (' + extra + ')' : '';
         }
         onChange?.(addr);
       },
@@ -35,9 +33,9 @@ export default function DaumAddressSearch({ value, onChange }: Props) {
   };
 
   return (
-    <Stack direction="row" spacing={1}>
-      <TextField value={value || ''} placeholder="주소 검색" InputProps={{ readOnly: true }} onClick={handleSearch} sx={{ flex: 1, cursor: 'pointer' }} size="small" />
-      <Button variant="outlined" startIcon={<Search />} onClick={handleSearch} sx={{ whiteSpace: 'nowrap' }}>주소 검색</Button>
-    </Stack>
+    <div className="flex gap-2">
+      <Input size="sm" value={value || ''} placeholder="주소 검색" readOnly className="flex-1 cursor-pointer" onClick={handleSearch} />
+      <Button size="sm" variant="bordered" startContent={<Search size={14} />} onPress={handleSearch}>주소 검색</Button>
+    </div>
   );
 }
